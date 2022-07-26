@@ -1,32 +1,26 @@
 import * as React from 'react';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
 import Editor from './Editor';
-
-function Copyright() {
-  return (
-    <Typography variant="body2" color="text.secondary" align="center">
-      {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{' '}
-      {new Date().getFullYear()}.
-    </Typography>
-  );
-}
+import Button from '@mui/material/Button';
+import SendIcon from '@mui/icons-material/Send';
+import PublishIcon from '@mui/icons-material/Publish';
+import Container from '@mui/material/Container';
+import Stack from '@mui/material/Stack';
 
 export default function App() {
   return (
-    <Container maxWidth="sm">
-      <Box sx={{ my: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Create React App example with TypeScript
-        </Typography>
+    <>
+      <Stack direction="row" justifyContent="flex-end" spacing={2} padding={2}>
+        <Button variant="contained" endIcon={<PublishIcon />}>
+          Load
+        </Button>
+        <Button variant="contained" endIcon={<SendIcon />}>
+          Start
+        </Button>
+      </Stack>
+      <Box sx={{ height: 'calc(80vh - 68.5px)' }}>
         <Editor />
-        <Copyright />
       </Box>
-    </Container>
+    </>
   );
 }
