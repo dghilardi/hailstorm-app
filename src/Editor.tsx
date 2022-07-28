@@ -2,6 +2,7 @@ import Editor from "@monaco-editor/react";
 
 import { loader } from "@monaco-editor/react";
 import { languages } from "monaco-editor";
+import { useEditorStore } from "./store/editor";
 
 export const runeConf: languages.LanguageConfiguration = {
 	"comments": {
@@ -371,25 +372,13 @@ loader.init().then(monaco => {
 });
 
 export default function RuneEditor() {
+  let script = useEditorStore((store) => store.script);
+  let updateScript = useEditorStore((state) => state.updateScript);
   return (
     <Editor
       language="rune"
-      defaultValue={SAMPLE_SCRIPT}
+	  value={script}
+	  onChange={(updatedScript) => updateScript(updatedScript || '')}
     />
   );
 }
-
-const SAMPLE_SCRIPT = `struct Hailstone;
-
-impl Hailstone {
-  pub fn new(args) { Self }
-
-  pub fn register_bot(bot) {
-    bot.register_action(ActionTrigger::alive(100.0), Self::do_nothing);
-  }
-
-  pub async fn do_nothing(self) {
-    println("doing nothing ...")
-  }
-}
-`;
