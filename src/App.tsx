@@ -4,8 +4,9 @@ import Editor from './Editor';
 import Button from '@mui/material/Button';
 import SendIcon from '@mui/icons-material/Send';
 import PublishIcon from '@mui/icons-material/Publish';
-import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
+import Grid from '@mui/material/Grid';
 
 export default function App() {
   return (
@@ -21,6 +22,14 @@ export default function App() {
       <Box sx={{ height: 'calc(80vh - 68.5px)' }}>
         <Editor />
       </Box>
+      <Grid container sx={{ height: '20vh' }} spacing={2} padding={2}>
+        <Grid item xs={3}>
+          <TextField fullWidth id="model-input" label="Model" variant="outlined" defaultValue="Hailstone" />
+        </Grid>
+        <Grid item xs={9}>
+          <TextField fullWidth id="expression-input" label="Expression" variant="outlined" defaultValue="10*rect(t/120)" />
+        </Grid>
+      </Grid>
     </>
   );
 }
