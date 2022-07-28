@@ -10,7 +10,7 @@ import Grid from '@mui/material/Grid';
 
 export default function App() {
   return (
-    <>
+    <Box flexDirection="column" sx={{ display: 'flex', height: '100vh' }}>
       <Stack direction="row" justifyContent="flex-end" spacing={2} padding={2}>
         <Button variant="contained" endIcon={<PublishIcon />}>
           Load
@@ -19,17 +19,17 @@ export default function App() {
           Start
         </Button>
       </Stack>
-      <Box sx={{ height: 'calc(80vh - 68.5px)' }}>
+      <Box sx={{ flexGrow: 1 }}>
         <Editor />
       </Box>
-      <Grid container sx={{ height: '20vh' }} spacing={2} padding={2}>
+      <Grid container spacing={2} padding={2}>
         <Grid item xs={3}>
           <TextField fullWidth id="model-input" label="Model" variant="outlined" defaultValue="Hailstone" />
         </Grid>
-        <Grid item xs={9}>
+        <Grid item xs={8}>
           <TextField fullWidth id="expression-input" label="Expression" variant="outlined" defaultValue="10*rect(t/120)" />
         </Grid>
       </Grid>
-    </>
+    </Box>
   );
 }
