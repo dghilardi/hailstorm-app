@@ -1,13 +1,16 @@
 import Editor from "@monaco-editor/react";
 
 import { loader } from "@monaco-editor/react";
-import { languages } from "monaco-editor";
+import { editor, languages } from "monaco-editor";
 import { useEditorStore } from "./store/editor";
+
+import gruvbox_dark from './theme/monaco-gruvbox-dark';
+import gruvbox_light from './theme/monaco-gruvbox-light';
 
 export const runeConf: languages.LanguageConfiguration = {
 	"comments": {
 		"lineComment": "//",
-		"blockComment": [ "/*", "*/" ]
+		"blockComment": ["/*", "*/"]
 	},
 	"brackets": [
 		["{", "}"],
@@ -39,7 +42,7 @@ export const runeConf: languages.LanguageConfiguration = {
 	}
 };
 
-export const runeLanguage: languages.IMonarchLanguage ={
+export const runeLanguage: languages.IMonarchLanguage = {
 	tokenPostfix: '.rust',
 	defaultToken: 'invalid',
 	keywords: [
@@ -364,22 +367,33 @@ export const runeLanguage: languages.IMonarchLanguage ={
 };
 
 loader.init().then(monaco => {
-  monaco.languages.register({
-    id: 'rune'
-  });
-  monaco.languages.setLanguageConfiguration('rune', runeConf);
-  monaco.languages.setMonarchTokensProvider('rune', runeLanguage);
+	monaco.editor.defineTheme('gruvbox-dark', gruvbox_dark);
+	monaco.editor.defineTheme('gruvbox-light', gruvbox_light);
+
+	monaco.languages.register({
+		id: 'rune'
+	});
+	monaco.languages.setLanguageConfiguration('rune', runeConf);
+	monaco.languages.setMonarchTokensProvider('rune', runeLanguage);
 });
 
+const opts: editor.IStandaloneEditorConstructionOptions = {
+	theme: 'gruvbox-light',
+	minimap: {
+		enabled: false,
+	}
+};
+
 export default function RuneEditor() {
-  let script = useEditorStore((store) => store.script);
-  let updateScript = useEditorStore((state) => state.updateScript);
-  return (
-    <Editor
-	  height="99%" // check out https://github.com/react-monaco-editor/react-monaco-editor/issues/53
-      language="rune"
-	  value={script}
-	  onChange={(updatedScript) => updateScript(updatedScript || '')}
-    />
-  );
+	let script = useEditorStore((store) => store.script);
+	let updateScript = useEditorStore((state) => state.updateScript);
+	return (
+		<Editor
+			height="99%" // check out https://github.com/react-monaco-editor/react-monaco-editor/issues/53
+			language="rune"
+			options={opts}
+			value={script}
+			onChange={(updatedScript) => updateScript(updatedScript || '')}
+		/>
+	);
 }
