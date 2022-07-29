@@ -376,6 +376,7 @@ export default function RuneEditor() {
   let updateScript = useEditorStore((state) => state.updateScript);
   return (
     <Editor
+	  height="99%" // check out https://github.com/react-monaco-editor/react-monaco-editor/issues/53
       language="rune"
 	  value={script}
 	  onChange={(updatedScript) => updateScript(updatedScript || '')}
