@@ -2,10 +2,10 @@ import Editor from "@monaco-editor/react";
 
 import { loader } from "@monaco-editor/react";
 import { editor, languages } from "monaco-editor";
-import { useEditorStore } from "./store/editor";
+import { useEditorStore } from "store/editor";
 
-import gruvbox_dark from './theme/monaco-gruvbox-dark';
-import gruvbox_light from './theme/monaco-gruvbox-light';
+import gruvbox_dark from 'theme/monaco-gruvbox-dark';
+import gruvbox_light from 'theme/monaco-gruvbox-light';
 
 export const runeConf: languages.LanguageConfiguration = {
 	"comments": {
