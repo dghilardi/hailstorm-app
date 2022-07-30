@@ -29,7 +29,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
+      "identifier": "dev.d71.hailstorm",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
