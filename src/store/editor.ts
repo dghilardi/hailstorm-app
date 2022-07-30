@@ -6,10 +6,13 @@ interface ExpressionDefinition {
   model: string,
   expression: string,
 }
+type EditorView = 'editor'|'chart';
 
 interface EditorState {
+  editorView: EditorView,
   script: string,
   expressions: ExpressionDefinition[],
+  updateEditorView: (view: EditorView) => void,
   updateScript: (script: string) => void,
   updateModelName: (idx: number, model: string) => void,
   updateModelExpression: (idx: number, expr: string) => void,
@@ -35,11 +38,13 @@ impl Hailstone {
 export const useEditorStore = create<EditorState>()(
   devtools(
     persist((set) => ({
+      editorView: 'editor',
       script: DEFAULT_SCRIPT,
       expressions: [{
         model: 'Hailstone',
         expression: '10*rect(t/120)',
       }],
+      updateEditorView: (view) => set(state => ({...state, editorView: view})),
       updateScript: (updatedScript) => set((state) => ({...state, script: updatedScript })),
       updateModelName: (idx, name) => set(state => ({
         ...state, 
