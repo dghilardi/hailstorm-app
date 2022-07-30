@@ -25,7 +25,7 @@ declare module "@mui/material/IconButton" {
     }
 }
 
-const GRUVBOX = {
+export const GRUVBOX = {
     BG: "#282828",
     RED_1: "#cc241d",
     GREEN_2: "#98971a",

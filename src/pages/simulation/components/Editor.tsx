@@ -1,7 +1,8 @@
-import Editor from "@monaco-editor/react";
+import Editor, { Monaco, useMonaco } from "@monaco-editor/react";
 
 import { loader } from "@monaco-editor/react";
 import { editor, languages } from "monaco-editor";
+import { useEffect } from "react";
 import { useEditorStore } from "store/editor";
 
 import gruvbox_dark from 'theme/monaco-gruvbox-dark';
@@ -366,7 +367,7 @@ export const runeLanguage: languages.IMonarchLanguage = {
 	}
 };
 
-loader.init().then(monaco => {
+function configureMonaco(monaco: Monaco) {
 	monaco.editor.defineTheme('gruvbox-dark', gruvbox_dark);
 	monaco.editor.defineTheme('gruvbox-light', gruvbox_light);
 
@@ -375,16 +376,23 @@ loader.init().then(monaco => {
 	});
 	monaco.languages.setLanguageConfiguration('rune', runeConf);
 	monaco.languages.setMonarchTokensProvider('rune', runeLanguage);
-});
+}
 
 const opts: editor.IStandaloneEditorConstructionOptions = {
-	theme: 'gruvbox-light',
+	theme: 'gruvbox-dark',
 	minimap: {
 		enabled: false,
 	}
 };
 
 export default function RuneEditor() {
+	const monaco = useMonaco();
+	useEffect(() => {
+		if (monaco) {
+			configureMonaco(monaco);
+		}
+	}, [monaco]);
+
 	let script = useEditorStore((store) => store.script);
 	let updateScript = useEditorStore((state) => state.updateScript);
 	return (
