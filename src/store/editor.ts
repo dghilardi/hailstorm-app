@@ -1,6 +1,19 @@
 import { handleMenuEvent } from 'handlers/menu';
 import create from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
+import * as t from 'io-ts'
+
+export const ModelExpression = t.type({
+  model: t.string,
+  expression: t.string,
+});
+
+export const HailstormProject = t.type({
+  script: t.string,
+  behaviour: t.array(ModelExpression),
+})
+
+export type HailstormProjectType = t.TypeOf<typeof HailstormProject>;
 
 interface ExpressionDefinition {
   model: string,
@@ -50,6 +63,14 @@ impl Hailstone {
 }
 `;
 
+export const DEFAULT_PROJECT: HailstormProjectType = {
+  script: DEFAULT_SCRIPT,
+  behaviour: [{
+    model: 'Hailstone',
+    expression: '10*rect(t/120)'
+  }]
+};
+
 export type EditorStateGetter = () => EditorState;
 export type EditorStateSetter = (stateUpdater: (state: EditorState) => EditorState) => void;
 
@@ -57,11 +78,8 @@ export const useEditorStore = create<EditorState>()(
   devtools((set, get) => ({
     filePath: null,
     editorView: 'editor',
-    script: DEFAULT_SCRIPT,
-    expressions: [{
-      model: 'Hailstone',
-      expression: '10*rect(t/120)',
-    }],
+    script: DEFAULT_PROJECT.script,
+    expressions: DEFAULT_PROJECT.behaviour,
     chartData: {
       xs: [],
       models: [],
