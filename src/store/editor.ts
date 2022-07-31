@@ -1,3 +1,4 @@
+import { handleMenuEvent } from 'handlers/menu';
 import { isMetaProperty } from 'typescript';
 import create from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
@@ -20,10 +21,12 @@ interface ModelChartData {
 }
 
 interface EditorState {
+  filePath: string | null,
   editorView: EditorView,
   script: string,
   expressions: ExpressionDefinition[],
   chartData: ChartData,
+  handleMenuEvent: (event_id: string) => void,
   updateEditorView: (view: EditorView) => void,
   updateScript: (script: string) => void,
   updateModelName: (idx: number, model: string) => void,
@@ -48,9 +51,13 @@ impl Hailstone {
 }
 `;
 
+export type EditorStateGetter = () => EditorState;
+export type EditorStateSetter = (stateUpdater: (state: EditorState) => EditorState) => void;
+
 export const useEditorStore = create<EditorState>()(
   devtools(
     persist((set, get) => ({
+      filePath: null,
       editorView: 'editor',
       script: DEFAULT_SCRIPT,
       expressions: [{
@@ -61,6 +68,7 @@ export const useEditorStore = create<EditorState>()(
         xs: [],
         models: [],
       },
+      handleMenuEvent: async (eventId) => await handleMenuEvent(get, set, eventId),
       updateEditorView: (view) => set(state => ({...state, editorView: view})),
       updateScript: (updatedScript) => set((state) => ({...state, script: updatedScript })),
       updateModelName: (idx, name) => set(state => ({

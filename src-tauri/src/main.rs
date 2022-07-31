@@ -8,12 +8,16 @@ mod rest;
 use axum::Router;
 use axum::routing::post;
 use std::net::SocketAddr;
-use axum::http::Method;
-use tauri::Manager;
+use tauri::{CustomMenuItem, Menu, Submenu};
 use tower_http::cors::CorsLayer;
 
 fn main() {
     tauri::Builder::default()
+        .menu(build_window_menu())
+        .on_menu_event(|event| {
+            let e: &str = event.menu_item_id();
+            event.window().emit("menu_event", e).unwrap();
+        })
         .setup(|_app| {
             tauri::async_runtime::spawn(spawn_http_server());
             Ok(())
@@ -37,4 +41,24 @@ fn spawn_http_server() -> impl std::future::Future<Output=()> + Send + 'static {
             .await
             .unwrap();
     })
+}
+
+fn build_window_menu() -> Menu {
+    let file_new = CustomMenuItem::new("new".to_string(), "New");
+    let file_open = CustomMenuItem::new("open".to_string(), "Open")
+        .accelerator("CmdOrControl+O");
+    let file_save = CustomMenuItem::new("save".to_string(), "Save")
+        .accelerator("CmdOrControl+S");
+    let file_save_as = CustomMenuItem::new("save-as", "Save As...")
+        .accelerator("CmdOrControl+Shift+S");
+    let file_menu = Submenu::new("File",
+                                 Menu::new()
+                                     .add_item(file_new)
+                                     .add_item(file_open)
+                                     .add_item(file_save)
+                                     .add_item(file_save_as),
+    );
+
+    Menu::new()
+        .add_submenu(file_menu)
 }
