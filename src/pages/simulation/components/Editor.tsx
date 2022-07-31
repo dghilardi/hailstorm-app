@@ -378,7 +378,6 @@ function configureMonaco(monaco: Monaco) {
 }
 
 const opts: editor.IStandaloneEditorConstructionOptions = {
-	theme: 'gruvbox-dark',
 	minimap: {
 		enabled: false,
 	}
@@ -399,6 +398,7 @@ export default function RuneEditor() {
 			height="99%" // check out https://github.com/react-monaco-editor/react-monaco-editor/issues/53
 			language="rune"
 			options={opts}
+			theme="gruvbox-dark"
 			value={script}
 			onChange={(updatedScript) => updateScript(updatedScript || '')}
 		/>
