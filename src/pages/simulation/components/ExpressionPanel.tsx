@@ -18,7 +18,7 @@ export function ExpressionLine(p: ExpressionLineParams) {
     const modelExpr = useEditorStore(store => store.expressions[p.idx].expression);
     const setModelExpression = useEditorStore(store => store.updateModelExpression);
     const setModelName = useEditorStore(store => store.updateModelName);
-    const isFirst = p.idx === 0;
+    
     return <>
         <Grid item xs={3}>
             <TextField fullWidth id="model-input" label="Model" variant="outlined" value={modelName} onChange={e => setModelName(p.idx, e.target.value)} />

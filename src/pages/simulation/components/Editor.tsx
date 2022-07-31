@@ -1,6 +1,5 @@
 import Editor, { Monaco, useMonaco } from "@monaco-editor/react";
 
-import { loader } from "@monaco-editor/react";
 import { editor, languages } from "monaco-editor";
 import { useEffect } from "react";
 import { useEditorStore } from "store/editor";
@@ -268,9 +267,9 @@ export const runeLanguage: languages.IMonarchLanguage = {
 		'#'
 	],
 
-	escapes: /\\([nrt0\"''\\]|x\h{2}|u\{\h{1,6}\})/,
+	escapes: /\\([nrt0"''\\]|x[0-9a-fA-F]{2}|u\{[0-9a-fA-F]{1,6}\})/,
 	delimiters: /[,]/,
-	symbols: /[\#\!\%\&\*\+\-\.\/\:\;\<\=\>\@\^\|_\?]+/,
+	symbols: /[#!%&*+\-./:;<=>@^|_?]+/,
 	intSuffixes: /[iu](8|16|32|64|128|size)/,
 	floatSuffixes: /f(32|64)/,
 
@@ -294,7 +293,7 @@ export const runeLanguage: languages.IMonarchLanguage = {
 			// Designator
 			[/\$/, 'identifier'],
 			// Lifetime annotations
-			[/'[a-zA-Z_][a-zA-Z0-9_]*(?=[^\'])/, 'identifier'],
+			[/'[a-zA-Z_][a-zA-Z0-9_]*(?=[^'])/, 'identifier'],
 			// Byte literal
 			[/'(\S|@escapes)'/, 'string.byteliteral'],
 			// Strings
@@ -312,7 +311,7 @@ export const runeLanguage: languages.IMonarchLanguage = {
 				}
 			],
 
-			[/[{}()\[\]<>]/, '@brackets'],
+			[/[{}()[\]<>]/, '@brackets'],
 			[/@symbols/, { cases: { '@operators': 'operator', '@default': '' } }]
 		],
 
@@ -323,10 +322,10 @@ export const runeLanguage: languages.IMonarchLanguage = {
 		],
 
 		comment: [
-			[/[^\/*]+/, 'comment'],
+			[/[^/*]+/, 'comment'],
 			[/\/\*/, 'comment', '@push'],
 			['\\*/', 'comment', '@pop'],
-			[/[\/*]/, 'comment']
+			[/[/*]/, 'comment']
 		],
 
 		string: [
