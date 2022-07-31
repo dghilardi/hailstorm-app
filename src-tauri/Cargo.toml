@@ -19,6 +19,12 @@ serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "1.0.5", features = ["api-all"] }
 
+# hailstorm
+meval = "0.2.0"
+tokio = {version ="1.20.1", features = ["macros", "rt"]}
+axum = "0.5.13"
+tower-http = { version = "0.3.4", features = ["cors"] }
+
 [features]
 # by default Tauri runs in production mode
 # when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL

@@ -6,18 +6,31 @@ interface ExpressionDefinition {
   model: string,
   expression: string,
 }
+
 type EditorView = 'editor'|'chart';
+
+interface ChartData {
+  xs: number[],
+  models: ModelChartData[],
+}
+
+interface ModelChartData {
+  name: string,
+  ys: number[],
+}
 
 interface EditorState {
   editorView: EditorView,
   script: string,
   expressions: ExpressionDefinition[],
+  chartData: ChartData,
   updateEditorView: (view: EditorView) => void,
   updateScript: (script: string) => void,
   updateModelName: (idx: number, model: string) => void,
   updateModelExpression: (idx: number, expr: string) => void,
   addExpression: () => void,
   remExpression: (idx: number) => void,
+  fetchChartData: () => void,
 }
 
 const DEFAULT_SCRIPT = `struct Hailstone;
@@ -37,13 +50,17 @@ impl Hailstone {
 
 export const useEditorStore = create<EditorState>()(
   devtools(
-    persist((set) => ({
+    persist((set, get) => ({
       editorView: 'editor',
       script: DEFAULT_SCRIPT,
       expressions: [{
         model: 'Hailstone',
         expression: '10*rect(t/120)',
       }],
+      chartData: {
+        xs: [],
+        models: [],
+      },
       updateEditorView: (view) => set(state => ({...state, editorView: view})),
       updateScript: (updatedScript) => set((state) => ({...state, script: updatedScript })),
       updateModelName: (idx, name) => set(state => ({
@@ -61,7 +78,26 @@ export const useEditorStore = create<EditorState>()(
       remExpression: (idx) => set(state => { 
         const expressions = state.expressions.filter((_, itemIdx) => itemIdx !== idx);
         return {...state, expressions}
-      })
+      }),
+      fetchChartData: async () => {
+        const expr = get().expressions;
+        const resp = await fetch('http://localhost:54321/simulation/compute_shape', { 
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            xmax: 3600, 
+            resolution: 200, 
+            models: expr.reduce((acc, entry) => ({...acc, [entry.model]: entry.expression}), {}) 
+          })
+        });
+        let parsed = await resp.json();
+        set(state => ({...state, chartData: { 
+          xs: parsed.x, 
+          models: Object.entries(parsed.y).map(([k, v]) => ({ name: k, ys: v as number[]}))
+        }}));
+      }
     }))
   )
 )
