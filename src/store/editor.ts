@@ -1,5 +1,4 @@
 import { handleMenuEvent } from 'handlers/menu';
-import { isMetaProperty } from 'typescript';
 import create from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 
