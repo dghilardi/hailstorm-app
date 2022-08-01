@@ -369,6 +369,7 @@ export const runeLanguage: languages.IMonarchLanguage = {
 function configureMonaco(monaco: Monaco) {
 	monaco.editor.defineTheme('gruvbox-dark', gruvbox_dark);
 	monaco.editor.defineTheme('gruvbox-light', gruvbox_light);
+	monaco.editor.setTheme('gruvbox-dark');
 
 	monaco.languages.register({
 		id: 'rune'
@@ -378,6 +379,7 @@ function configureMonaco(monaco: Monaco) {
 }
 
 const opts: editor.IStandaloneEditorConstructionOptions = {
+	theme: 'gruvbox-dark',
 	minimap: {
 		enabled: false,
 	}
