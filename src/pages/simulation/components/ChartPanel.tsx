@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useEditorStore } from 'store/editor';
 import { GRUVBOX } from 'theme/gruvbox';
+import { debounce } from "ts-debounce";
 
 const CHART_COLORS = [
     GRUVBOX.RED_1,
@@ -23,31 +24,36 @@ const CHART_COLORS = [
 export function ChartPanel() {
     const expressions = useEditorStore(store => store.expressions);
     const fetchChartData = useEditorStore(store => store.fetchChartData);
+    const debouncer = useMemo(() => {
+        return debounce((callback: () => void) => callback(), 500, { isImmediate: true, maxWait: 1500 });
+    }, []);
     const chartData = useEditorStore(store => store.chartData);
-    useEffect(() => { fetchChartData(); }, [expressions, fetchChartData]);
+    useEffect(() => { 
+        debouncer(fetchChartData);
+    }, [expressions, fetchChartData, debouncer]);
 
     const data = chartData.xs.map((v, idx) => ({
         name: fmtTimestamp(v),
-        ...chartData.models.reduce((acc, model) => ({...acc, [model.name]: model.ys[idx]}), {}),
+        ...chartData.models.reduce((acc, model) => ({ ...acc, [model.name]: model.ys[idx] }), {}),
     }));
 
     const modelNames = chartData.models.map(model => model.name);
 
     return <ResponsiveContainer width="100%" height="99%">
         <LineChart data={data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-            { modelNames.map((name, idx) =>
+            {modelNames.map((name, idx) =>
                 <Line key={`chart-line-${idx}`} dot={false} isAnimationActive={false} type="monotone" dataKey={name} stroke={CHART_COLORS[idx]} />
             )}
             <CartesianGrid stroke={GRUVBOX.GRAY_7} strokeDasharray="5 5" />
             <XAxis dataKey="name" />
             <YAxis />
-            <Tooltip contentStyle={{backgroundColor: GRUVBOX.BG0_H }} />
+            <Tooltip contentStyle={{ backgroundColor: GRUVBOX.BG0_H }} />
         </LineChart>
     </ResponsiveContainer>;
 }
 
 function fmtTimestamp(sec_num: number) {
-    var hours   = Math.floor(sec_num / 3600);
+    var hours = Math.floor(sec_num / 3600);
     var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
     var seconds = sec_num - (hours * 3600) - (minutes * 60);
 
