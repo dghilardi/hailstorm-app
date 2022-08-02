@@ -33,7 +33,7 @@ export function ChartPanel() {
 
     const modelNames = chartData.models.map(model => model.name);
 
-    return <ResponsiveContainer width="100%" height="100%">
+    return <ResponsiveContainer width="100%" height="99%">
         <LineChart data={data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
             { modelNames.map((name, idx) =>
                 <Line key={`chart-line-${idx}`} dot={false} isAnimationActive={false} type="monotone" dataKey={name} stroke={CHART_COLORS[idx]} />
