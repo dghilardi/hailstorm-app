@@ -68,6 +68,7 @@ interface EditorState {
   closeSnackbar: () => void,
   handleMenuEvent: (event_id: string) => void,
   updateEditorView: (view: EditorView) => void,
+  updateSelectedBackend: (idx: number) => void,
   updateScript: (script: string) => void,
   updateModelName: (idx: number, model: string) => void,
   updateModelExpression: (idx: number, expr: string) => void,
@@ -135,6 +136,7 @@ export const useEditorStore = create<EditorState>()(
     }),
     handleMenuEvent: async (eventId) => await handleMenuEvent(get, set, eventId),
     updateEditorView: (view) => set(state => ({ ...state, editorView: view })),
+    updateSelectedBackend: (idx: number) => set(state => ({ ...state, selectedBackend: idx })),
     updateScript: (updatedScript) => set((state) => ({ ...state, script: updatedScript })),
     updateModelName: (idx, name) => set(state => ({
       ...state,

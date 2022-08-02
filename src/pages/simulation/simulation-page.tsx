@@ -14,6 +14,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import { ChartPanel } from './components/ChartPanel';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import { BackendSelect } from './components/BackendSelect';
 
 export default function App() {
   let view = useEditorStore(store => store.editorView);
@@ -63,6 +64,7 @@ export default function App() {
             <SsidChartIcon />
           </ToggleButton>
         </ToggleButtonGroup>
+        <BackendSelect />
         <Box sx={{ flex: 1 }} />
         <Button variant="contained" endIcon={<PublishIcon />} onClick={handleSimulationLoad}>
           Load
