@@ -15,6 +15,14 @@ export const HailstormProject = t.type({
 
 export type HailstormProjectType = t.TypeOf<typeof HailstormProject>;
 
+export const HailstormBackend = t.type({
+  name: t.string,
+  hostname: t.string,
+  port: t.number,
+});
+
+export type HailstormBackendType = t.TypeOf<typeof HailstormBackend>;
+
 interface ExpressionDefinition {
   model: string,
   expression: string,
@@ -33,6 +41,8 @@ interface ModelChartData {
 }
 
 interface EditorState {
+  backends: HailstormBackendType[],
+  selectedBackend: number,
   filePath: string | null,
   editorView: EditorView,
   script: string,
@@ -76,6 +86,12 @@ export type EditorStateSetter = (stateUpdater: (state: EditorState) => EditorSta
 
 export const useEditorStore = create<EditorState>()(
   devtools((set, get) => ({
+    backends: [{
+      name: 'Embedded',
+      hostname: 'localhost',
+      port: 54321,
+    }],
+    selectedBackend: 0,
     filePath: null,
     editorView: 'editor',
     script: DEFAULT_PROJECT.script,
@@ -105,7 +121,8 @@ export const useEditorStore = create<EditorState>()(
     }),
     fetchChartData: async () => {
       const expr = get().expressions;
-      const resp = await fetch('http://localhost:54321/simulation/compute_shape', {
+      const backend = get().backends[get().selectedBackend];
+      const resp = await fetch(`http://${backend.hostname}:${backend.port}/hailstorm/shape/compute`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

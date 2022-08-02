@@ -31,7 +31,7 @@ fn spawn_http_server() -> impl std::future::Future<Output=()> + Send + 'static {
         let cors = CorsLayer::permissive();
 
         let app = Router::new()
-            .route("/simulation/compute_shape", post(rest::expression::compute_shape))
+            .route("/hailstorm/shape/compute", post(rest::expression::compute_shape))
             .layer(cors);
 
         let addr = SocketAddr::from(([127, 0, 0, 1], 54321));
