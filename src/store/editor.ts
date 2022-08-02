@@ -2,6 +2,9 @@ import { handleMenuEvent } from 'handlers/menu';
 import create from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import * as t from 'io-ts'
+import { AlertColor } from '@mui/material';
+import { fold } from 'fp-ts/lib/Either';
+import { pipe } from 'fp-ts/lib/function';
 
 export const ModelExpression = t.type({
   model: t.string,
@@ -14,6 +17,18 @@ export const HailstormProject = t.type({
 })
 
 export type HailstormProjectType = t.TypeOf<typeof HailstormProject>;
+
+export const ActionOutcome = t.type({
+  outcome: t.string
+});
+
+export type ActionOutcomeType = t.TypeOf<typeof ActionOutcome>;
+
+export interface SnackbarParams {
+  severity: AlertColor | undefined,
+  message: string,
+  open: boolean,
+}
 
 export const HailstormBackend = t.type({
   name: t.string,
@@ -48,6 +63,9 @@ interface EditorState {
   script: string,
   expressions: ExpressionDefinition[],
   chartData: ChartData,
+  snackbar: SnackbarParams,
+  openSnackbar: (message: string, severity: AlertColor) => void,
+  closeSnackbar: () => void,
   handleMenuEvent: (event_id: string) => void,
   updateEditorView: (view: EditorView) => void,
   updateScript: (script: string) => void,
@@ -56,6 +74,8 @@ interface EditorState {
   addExpression: () => void,
   remExpression: (idx: number) => void,
   fetchChartData: () => void,
+  loadSimulation: () => Promise<ActionOutcomeType>,
+  launchSimulation: () => Promise<ActionOutcomeType>,
 }
 
 const DEFAULT_SCRIPT = `struct Hailstone;
@@ -100,6 +120,19 @@ export const useEditorStore = create<EditorState>()(
       xs: [],
       models: [],
     },
+    snackbar: {
+      message: '',
+      severity: undefined,
+      open: false,
+    },
+    openSnackbar: (message, severity) => set(state => {
+      const snackbar = { message, severity, open: true };
+      return {...state, snackbar};
+    }),
+    closeSnackbar: () => set(state => {
+      const snackbar = { message: state.snackbar.message, severity: state.snackbar.severity, open: false };
+      return {...state, snackbar};
+    }),
     handleMenuEvent: async (eventId) => await handleMenuEvent(get, set, eventId),
     updateEditorView: (view) => set(state => ({ ...state, editorView: view })),
     updateScript: (updatedScript) => set((state) => ({ ...state, script: updatedScript })),
@@ -140,7 +173,35 @@ export const useEditorStore = create<EditorState>()(
           models: Object.entries(parsed.y).map(([k, v]) => ({ name: k, ys: v as number[] }))
         }
       }));
-    }
+    },
+    loadSimulation: async () => {
+      const script = get().script;
+      const users = get().expressions.map(({ model, expression }) => ({ model, shape: expression }));
+      const backend = get().backends[get().selectedBackend];
+      const resp = await fetch(`http://${backend.hostname}:${backend.port}/hailstorm/simulation/load`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          script,
+          users,
+        })
+      });
+      let respObj = await resp.json();
+      return pipe(ActionOutcome.decode(respObj), fold(e => ({ outcome: 'error' }), ok => ok));
+    },
+    launchSimulation: async () => {
+      const backend = get().backends[get().selectedBackend];
+      const resp = await fetch(`http://${backend.hostname}:${backend.port}/hailstorm/simulation/start`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      let respObj = await resp.json();
+      return pipe(ActionOutcome.decode(respObj), fold(e => ({ outcome: 'error' }), ok => ok));
+    },
   }))
 )
 
