@@ -5,6 +5,7 @@ import * as t from 'io-ts'
 import { AlertColor } from '@mui/material';
 import { fold } from 'fp-ts/lib/Either';
 import { pipe } from 'fp-ts/lib/function';
+import { HailstormConfigType } from 'services/config';
 
 export const ModelExpression = t.type({
   model: t.string,
@@ -18,9 +19,14 @@ export const HailstormProject = t.type({
 
 export type HailstormProjectType = t.TypeOf<typeof HailstormProject>;
 
-export const ActionOutcome = t.type({
-  outcome: t.string
-});
+export const ActionOutcome = t.intersection([
+  t.type({
+    outcome: t.string
+  }),
+  t.partial({
+    message: t.string,
+  })
+]);
 
 export type ActionOutcomeType = t.TypeOf<typeof ActionOutcome>;
 
@@ -74,6 +80,7 @@ interface EditorState {
   updateModelExpression: (idx: number, expr: string) => void,
   addExpression: () => void,
   remExpression: (idx: number) => void,
+  updateConfig: (config: HailstormConfigType) => void,
   fetchChartData: () => void,
   loadSimulation: () => Promise<ActionOutcomeType>,
   launchSimulation: () => Promise<ActionOutcomeType>,
@@ -128,11 +135,11 @@ export const useEditorStore = create<EditorState>()(
     },
     openSnackbar: (message, severity) => set(state => {
       const snackbar = { message, severity, open: true };
-      return {...state, snackbar};
+      return { ...state, snackbar };
     }),
     closeSnackbar: () => set(state => {
       const snackbar = { message: state.snackbar.message, severity: state.snackbar.severity, open: false };
-      return {...state, snackbar};
+      return { ...state, snackbar };
     }),
     handleMenuEvent: async (eventId) => await handleMenuEvent(get, set, eventId),
     updateEditorView: (view) => set(state => ({ ...state, editorView: view })),
@@ -154,6 +161,7 @@ export const useEditorStore = create<EditorState>()(
       const expressions = state.expressions.filter((_, itemIdx) => itemIdx !== idx);
       return { ...state, expressions }
     }),
+    updateConfig: (config) => set(state => ({ ...state, backends: config.backends })),
     fetchChartData: async () => {
       const expr = get().expressions;
       const backend = get().backends[get().selectedBackend];
@@ -191,7 +199,7 @@ export const useEditorStore = create<EditorState>()(
         })
       });
       let respObj = await resp.json();
-      return pipe(ActionOutcome.decode(respObj), fold(e => ({ outcome: 'error' }), ok => ok));
+      return pipe(ActionOutcome.decode(respObj), fold(e => ({ outcome: 'error', message: `parsing error` }), ok => ok));
     },
     launchSimulation: async () => {
       const backend = get().backends[get().selectedBackend];
@@ -202,7 +210,7 @@ export const useEditorStore = create<EditorState>()(
         },
       });
       let respObj = await resp.json();
-      return pipe(ActionOutcome.decode(respObj), fold(e => ({ outcome: 'error' }), ok => ok));
+      return pipe(ActionOutcome.decode(respObj), fold(e => ({ outcome: 'error', message: `parsing error` }), ok => ok));
     },
   }))
 )

@@ -31,10 +31,14 @@ export default function App() {
       if (res.outcome === 'ok') {
         openSnackbar('Simulation loaded', 'info');
       } else {
+        console.error(`loadSimulation outcome is not ok -> ${res.message}`);
         openSnackbar('Error loading simulation', 'error')
       }
     })
-      .catch(err => openSnackbar('Error loading simulation', 'error'));
+      .catch(err => {
+        console.error(`Error during loadSimulation ${err}`);
+        openSnackbar('Error loading simulation', 'error')
+      });
   };
 
   let handleSimulationStart = () => {
@@ -43,10 +47,14 @@ export default function App() {
         if (res.outcome === 'ok') {
           openSnackbar('Simulation started', 'info');
         } else {
+          console.error(`launchSimulation outcome is not ok -> ${res.message}`);
           openSnackbar('Error starting simulation', 'error')
         }
       })
-      .catch(err => openSnackbar('Error starting simulation', 'error'));
+      .catch(err => {
+        console.error(`Error during launchSimulation ${err}`);
+        openSnackbar('Error starting simulation', 'error')
+      });
   };
   return (
     <>

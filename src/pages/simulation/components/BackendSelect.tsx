@@ -15,6 +15,6 @@ export function BackendSelect() {
         return <></>;
     }
     return <Select value={selectedBackend} onChange={handleChangeBackend}>
-        {backends.map((backend, idx) => <MenuItem value={idx}>{backend.name}</MenuItem>)}
+        {backends.map((backend, idx) => <MenuItem key={`backend-select-item-${idx}`} value={idx}>{backend.name}</MenuItem>)}
     </Select>;
 }

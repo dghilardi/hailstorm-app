@@ -18,6 +18,8 @@
         "ask": true
       },
       "fs": {
+        "scope": ["$CONFIG/hailstorm-app", "$CONFIG/hailstorm-app/*"],
+        "createDir": true,
         "readFile": true,
         "writeFile": true
       }
