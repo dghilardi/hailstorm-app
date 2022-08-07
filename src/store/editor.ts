@@ -86,7 +86,9 @@ interface EditorState {
   launchSimulation: () => Promise<ActionOutcomeType>,
 }
 
-const DEFAULT_SCRIPT = `struct Hailstone;
+const DEFAULT_SCRIPT = `use hailstorm::bot::ActionTrigger;
+
+struct Hailstone;
 
 impl Hailstone {
   pub fn new(args) { Self }

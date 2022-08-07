@@ -15,15 +15,25 @@ rust-version = "1.57"
 tauri-build = { version = "1.0.4", features = [] }
 
 [dependencies]
+log = "0.4.17"
+env_logger = "0.9.0"
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "1.0.5", features = ["dialog-ask", "dialog-open", "dialog-save", "fs-create-dir", "fs-read-file", "fs-write-file"] }
 
 # hailstorm
+actix = "0.13.0"
+rune = "0.12.0"
 meval = "0.2.0"
 tokio = { version ="1.20.1" }
 axum = "0.5.13"
 tower-http = { version = "0.3.4", features = ["cors"] }
+
+[dependencies.hailstorm]
+# path = "../../../../libs/rust/hailstorm"
+git = "ssh://git@bitbucket.org/comelit/ccs-lib-hailstorm.git"
+branch = "main"
+# version = "0.1.2"
 
 [features]
 # by default Tauri runs in production mode
