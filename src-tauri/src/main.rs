@@ -22,13 +22,12 @@ use tokio::time::{sleep, Duration};
 
 mod rest;
 mod hlst;
-
-#[actix::main]
-async fn main() {
+fn main() {
     env_logger::init();
 
     log::debug!("Initializing agent runtime");
-    let runtime = AgentBuilder {
+    let (exit_snd, exit_rcv) = tokio::sync::oneshot::channel();
+    let handler = AgentBuilder {
         agent_id: 1998186,
         downstream: (),
         upstream: [(String::from("tauri"), ())].into_iter().collect(),
@@ -39,16 +38,14 @@ async fn main() {
 
             ctx
         },
-    }.launch::<TauriUpstream>();
+    }.spawn::<TauriUpstream>(exit_rcv);
 
-    let client = runtime.clients.get(0)
+    let client = handler.runtime.clients.get(0)
         .expect("At least one client was expected")
         .clone();
 
-    tauri::async_runtime::set(tokio::runtime::Handle::current());
 
-
-    let mut app = tauri::Builder::default()
+    tauri::Builder::default()
         .menu(build_window_menu())
         .on_menu_event(|event| {
             let e: &str = event.menu_item_id();
@@ -59,18 +56,12 @@ async fn main() {
             tauri::async_runtime::spawn(spawn_http_server(client));
             Ok(())
         })
-        .build(tauri::generate_context!())
+        .run(tauri::generate_context!())
         .expect("error while running tauri application");
 
-    async move {
-        loop {
-            let iteration = app.run_iteration();
-            if iteration.window_count == 0 {
-                break;
-            }
-            sleep(Duration::from_millis(0)).await;
-        }
-    }.await;
+    exit_snd.send(()).expect("Error sending exit signal");
+    handler.handle.join().expect("Error joining agent thread");
+
 }
 
 fn spawn_http_server(client: Addr<TauriUpstream>) -> impl std::future::Future<Output=()> + Send + 'static {
