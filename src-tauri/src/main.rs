@@ -5,6 +5,7 @@ windows_subsystem = "windows"
 
 use std::collections::HashMap;
 use std::net::SocketAddr;
+use std::path::PathBuf;
 use actix::{Addr, System};
 
 use axum::{Extension, Router};
@@ -14,7 +15,8 @@ use hailstorm::simulation::rune::extension;
 use hailstorm::simulation::rune::extension::env::EnvModuleConf;
 use hailstorm::simulation::rune::extension::storage::initializer::empty::EmptyInitializer;
 use hailstorm::simulation::rune::extension::storage::StorageModuleArgs;
-use tauri::{CustomMenuItem, Menu, Submenu};
+use tauri::{App, CustomMenuItem, Manager, Menu, Submenu, Wry};
+use tauri::api::cli::Matches;
 use tauri::async_runtime::TokioRuntime;
 use tower_http::cors::CorsLayer;
 use crate::hlst::tauri_upstream::TauriUpstream;
@@ -51,7 +53,9 @@ fn main() {
             let e: &str = event.menu_item_id();
             event.window().emit("menu_event", e).unwrap();
         })
-        .setup(|_app| {
+        .setup(|app| {
+            handle_args(&app);
+
             log::debug!("Initializing axum server");
             tauri::async_runtime::spawn(spawn_http_server(client));
             Ok(())
@@ -62,6 +66,26 @@ fn main() {
     exit_snd.send(()).expect("Error sending exit signal");
     handler.handle.join().expect("Error joining agent thread");
 
+}
+
+fn handle_args(app: &App<Wry>) {
+    match app.get_cli_matches() {
+        // `matches` here is a Struct with { args, subcommand }.
+        // `args` is `HashMap<String, ArgData>` where `ArgData` is a struct with { value, occurances }.
+        // `subcommand` is `Option<Box<SubcommandMatches>>` where `SubcommandMatches` is a struct with { name, matches }.
+        Ok(Matches { args, .. }) => {
+            let maybe_project = args.get("project")
+                .and_then(|p| p.value.as_str())
+                .map(|path_str| PathBuf::from(path_str.to_string()));
+            if let Some(project_path) = maybe_project {
+                app.fs_scope().allow_file(project_path)
+                    .expect("Error adding project to allowlist");
+            }
+        }
+        Err(err) => {
+            log::error!("Error parsing args - {err}")
+        }
+    }
 }
 
 fn spawn_http_server(client: Addr<TauriUpstream>) -> impl std::future::Future<Output=()> + Send + 'static {

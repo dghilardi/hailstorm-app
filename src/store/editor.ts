@@ -1,4 +1,4 @@
-import { handleMenuEvent } from 'handlers/menu';
+import { handleMenuEvent, loadSimulationFile } from 'handlers/menu';
 import create from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import * as t from 'io-ts'
@@ -73,6 +73,7 @@ interface EditorState {
   openSnackbar: (message: string, severity: AlertColor) => void,
   closeSnackbar: () => void,
   handleMenuEvent: (event_id: string) => void,
+  loadSimulationFile: (path: string) => void,
   updateEditorView: (view: EditorView) => void,
   updateSelectedBackend: (idx: number) => void,
   updateScript: (script: string) => void,
@@ -144,6 +145,7 @@ export const useEditorStore = create<EditorState>()(
       return { ...state, snackbar };
     }),
     handleMenuEvent: async (eventId) => await handleMenuEvent(get, set, eventId),
+    loadSimulationFile: async (path) => await loadSimulationFile(path, false, get, set),
     updateEditorView: (view) => set(state => ({ ...state, editorView: view })),
     updateSelectedBackend: (idx: number) => set(state => ({ ...state, selectedBackend: idx })),
     updateScript: (updatedScript) => set((state) => ({ ...state, script: updatedScript })),

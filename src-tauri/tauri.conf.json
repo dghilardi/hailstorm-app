@@ -71,6 +71,15 @@
         "title": "Hailstorm",
         "width": 800
       }
-    ]
+    ],
+    "cli": {
+      "description": "Hailstorm app lets you define your simulations",
+      "args": [{
+        "name": "project",
+        "short": "p",
+        "takesValue": true,
+        "multiple": false
+      }]
+    }
   }
 }

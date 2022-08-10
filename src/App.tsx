@@ -5,10 +5,13 @@ import { useEditorStore } from 'store/editor';
 import { useEffect } from 'react';
 import { Event, listen } from "@tauri-apps/api/event";
 import { loadConfig } from 'services/config';
+import { readParams } from 'params';
+import { loadSimulationFile } from 'handlers/menu';
 
 export default function App() {
   const menuEventHandler = useEditorStore(store => store.handleMenuEvent);
   const configUpdater = useEditorStore(store => store.updateConfig);
+  const loadFile = useEditorStore(store => store.loadSimulationFile);
   useEffect(() => { loadConfig().then(configUpdater) }, [configUpdater]);
   useEffect(() => {
     let unlistenPromise = listen("menu_event", (event: Event<string>) => {
@@ -16,6 +19,14 @@ export default function App() {
     });
     return () => { unlistenPromise.then(unlistenFn => unlistenFn()) };
   }, [menuEventHandler]);
+
+  React.useMemo(readParams, [])
+    .then(params => {
+      if (params.projectPath) {
+        loadFile(params.projectPath);
+      }
+    });
+
   return (
     <Box flexDirection="column" sx={{ display: 'flex', height: '100vh' }}>
       <SimulationPage />

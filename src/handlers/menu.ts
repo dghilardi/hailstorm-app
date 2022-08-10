@@ -45,20 +45,24 @@ async function doNew(get: EditorStateGetter, set: EditorStateSetter) {
 async function doOpen(get: EditorStateGetter, set: EditorStateSetter) {
     const path = await open({ multiple: false, filters: FILE_FILTERS_HAILSTORM_PROJECT });
     if (path !== null) {
-        const content = await readTextFile(path as string);
-        const parsed = parseProject(content);
-        if (parsed !== null) {
-            const saveCurrent = await ask('Do you want to save the current project?');
-            if (saveCurrent) {
-                await doSave(get, set);
-            }
-            set(state => ({
-                ...state,
-                filePath: path as string,
-                script: parsed.script,
-                expressions: parsed.behaviour,
-            }));
+        loadSimulationFile(path as string, true, get, set);
+    }
+}
+
+export async function loadSimulationFile(path: string, askSaveCurrent: boolean, get: EditorStateGetter, set: EditorStateSetter) {
+    const content = await readTextFile(path as string);
+    const parsed = parseProject(content);
+    if (parsed !== null) {
+        const saveCurrent = askSaveCurrent ? await ask('Do you want to save the current project?') : false;
+        if (saveCurrent) {
+            await doSave(get, set);
         }
+        set(state => ({
+            ...state,
+            filePath: path as string,
+            script: parsed.script,
+            expressions: parsed.behaviour,
+        }));
     }
 }
 
