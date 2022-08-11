@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Hailstorm App
+Comment=Manage and launch hailstorm projects
+
+Exec=hailstorm-app -p %u
+Terminal=false
+
+Icon=hailstorm-app
+Categories=Development;Utility;Profiling;
+MimeType=application/hailsorm-hsp;

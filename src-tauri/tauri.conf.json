@@ -29,7 +29,11 @@
       "category": "DeveloperTool",
       "copyright": "",
       "deb": {
-        "depends": []
+        "depends": [],
+        "files": {
+          "/usr/share/applications/hailstorm-app.desktop": "../dist/linux/xdg/desktop/hailstorm-app.desktop",
+          "/usr/share/mime/packages/hailstorm-app.xml": "../dist/linux/xdg/mime/hailstorm-app.xml"
+        }
       },
       "externalBin": [],
       "icon": [

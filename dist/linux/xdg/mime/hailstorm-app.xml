@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/hailsorm-hsp">
+    <sub-class-of type="application/yml"/>
+    <generic-icon name="hailstorm-hsp"/>
+    <comment>Hailstorm project</comment>
+    <glob pattern="*.hsp"/>
+    <glob pattern="*.hlsp"/>
+  </mime-type>
+</mime-info>
