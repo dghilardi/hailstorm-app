@@ -48,9 +48,9 @@ package() {
     install -Dm 0644 "dist/linux/xdg/mime/hailstorm-app.xml" "${pkgdir}/usr/share/mime/packages/hailstorm-app.xml"
     install -Dm 0644 "src-tauri/icons/32x32.png" "${pkgdir}/usr/share/icons/hicolor/32x32/apps/hailstorm-app.png"
     install -Dm 0644 "src-tauri/icons/128x128.png" "${pkgdir}/usr/share/icons/hicolor/128x128/apps/hailstorm-app.png"
-    install -Dm 0644 "src-tauri/icons/256x256.png" "${pkgdir}/usr/share/icons/hicolor/256x256/apps/hailstorm-app.png"
+    install -Dm 0644 "src-tauri/icons/128x128@2x.png" "${pkgdir}/usr/share/icons/hicolor/256x256/apps/hailstorm-app.png"
     install -Dm 0644 "src-tauri/icons/hsp/32x32.png" "${pkgdir}/usr/share/icons/hicolor/32x32/apps/hailstorm-hsp.png"
     install -Dm 0644 "src-tauri/icons/hsp/128x128.png" "${pkgdir}/usr/share/icons/hicolor/128x128/apps/hailstorm-hsp.png"
-    install -Dm 0644 "src-tauri/icons/hsp/256x256.png" "${pkgdir}/usr/share/icons/hicolor/256x256/apps/hailstorm-hsp.png"
+    install -Dm 0644 "src-tauri/icons/hsp/128x128@2x.png" "${pkgdir}/usr/share/icons/hicolor/256x256/apps/hailstorm-hsp.png"
 	install -Dm 0777 "src-tauri/target/release/${_bin}" "${pkgdir}/usr/bin/${_bin}"
 }
