@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use axum::Json;
 use axum::response::IntoResponse;
+use hailstorm::simulation::actor::simulation::SimulationActor;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
@@ -29,20 +30,13 @@ pub async fn compute_shape(Json(payload): Json<ComputeShapeReq>) -> impl IntoRes
 }
 
 fn compute_shapes(xs: &[u32], models: HashMap<String, String>) -> HashMap<String, Vec<u32>> {
-    let mut ctx = meval::Context::new();
-    ctx.func("rect", |x| if x.abs() > 0.5 { 0.0 } else if x.abs() == 0.5 { 0.5 } else { 1.0 })
-        .func("tri", |x| if x.abs() < 1.0 { 1.0 - x.abs() } else { 0.0 })
-        .func("step", |x| if x < 0.0 { 0.0 } else if x == 0.0 { 0.5 } else { 1.0 })
-    ;
-
     models.into_iter()
-        .filter_map(|(name, expr)| evaluate_shape(ctx.clone(), xs, expr).ok().map(|ys| (name, ys)))
+        .filter_map(|(name, expr)| evaluate_shape(xs, expr).ok().map(|ys| (name, ys)))
         .collect()
 }
 
-fn evaluate_shape(ctx: meval::Context, xs: &[u32], expression: String) -> Result<Vec<u32>, meval::Error> {
-    let expr: meval::Expr = expression.parse()?;
-    let shape_fun = expr.bind_with_context(ctx, "t")?;
+fn evaluate_shape(xs: &[u32], expression: String) -> Result<Vec<u32>, meval::Error> {
+    let shape_fun = SimulationActor::parse_shape_fun(expression)?;
     let res = xs.iter()
         .map(|x| shape_fun(*x as f64) as u32)
         .collect();

@@ -6,11 +6,12 @@ windows_subsystem = "windows"
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::path::PathBuf;
-use actix::{Addr, System};
 
+use actix::{Addr, System};
 use axum::{Extension, Router};
 use axum::routing::post;
 use hailstorm::agent::builder::AgentBuilder;
+use hailstorm::simulation::actor::simulation::SimulationParams;
 use hailstorm::simulation::rune::extension;
 use hailstorm::simulation::rune::extension::env::EnvModuleConf;
 use hailstorm::simulation::rune::extension::storage::initializer::empty::EmptyInitializer;
@@ -18,9 +19,10 @@ use hailstorm::simulation::rune::extension::storage::StorageModuleArgs;
 use tauri::{App, CustomMenuItem, Manager, Menu, Submenu, Wry};
 use tauri::api::cli::Matches;
 use tauri::async_runtime::TokioRuntime;
+use tokio::time::{Duration, sleep};
 use tower_http::cors::CorsLayer;
+
 use crate::hlst::tauri_upstream::TauriUpstream;
-use tokio::time::{sleep, Duration};
 
 mod rest;
 mod hlst;
@@ -39,6 +41,10 @@ fn main() {
             ctx.install(&extension::env::module(EnvModuleConf { prefix: Some(String::from("hsa")) }).expect("Error initializing env extension module")).expect("Error loading env extension module");
 
             ctx
+        },
+        simulation_params: SimulationParams {
+            max_running: Some(1000),
+            max_rate: Some(100),
         },
     }.spawn::<TauriUpstream>(exit_rcv);
 
