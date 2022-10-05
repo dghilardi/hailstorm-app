@@ -1342,7 +1342,7 @@ dependencies = [
 [[package]]
 name = "hailstorm"
 version = "0.1.2"
-source = "git+ssh://git@bitbucket.org/comelit/ccs-lib-hailstorm.git?branch=main#8584d10e30613125df7002d38bdc119cf04ae972"
+source = "git+ssh://git@github.com/comelit/hailstorm.git?branch=main#bc9870ae5182b611335344502afdd3052b6512a7"
 dependencies = [
  "actix",
  "csv",
