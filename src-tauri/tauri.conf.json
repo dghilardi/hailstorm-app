@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "hailstorm-app",
-    "version": "0.1.0"
+    "version": "0.2.2"
   },
   "tauri": {
     "allowlist": {
@@ -86,10 +86,10 @@
       "description": "Hailstorm app lets you define your simulations",
       "args": [
         {
-        "name": "project",
-        "short": "p",
-        "takesValue": true,
-        "multiple": false
+          "name": "project",
+          "short": "p",
+          "takesValue": true,
+          "multiple": false
         }
       ]
     }
