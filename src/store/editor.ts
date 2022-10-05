@@ -1,6 +1,6 @@
 import { handleMenuEvent, loadSimulationFile } from 'handlers/menu';
 import create from 'zustand'
-import { devtools, persist } from 'zustand/middleware'
+import { devtools } from 'zustand/middleware'
 import * as t from 'io-ts'
 import { AlertColor } from '@mui/material';
 import { fold } from 'fp-ts/lib/Either';

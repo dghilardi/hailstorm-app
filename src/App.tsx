@@ -6,7 +6,6 @@ import { useEffect } from 'react';
 import { Event, listen } from "@tauri-apps/api/event";
 import { loadConfig } from 'services/config';
 import { readParams } from 'params';
-import { loadSimulationFile } from 'handlers/menu';
 
 export default function App() {
   const menuEventHandler = useEditorStore(store => store.handleMenuEvent);
