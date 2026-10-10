@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 use axum::Json;
 use axum::response::IntoResponse;
-use hailstorm::simulation::actor::simulation::SimulationActor;
+use hailstorm::simulation::shape::parse_shape_fun;
+use hailstorm::simulation::error::SimulationError;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
@@ -35,8 +36,8 @@ fn compute_shapes(xs: &[u32], models: HashMap<String, String>) -> HashMap<String
         .collect()
 }
 
-fn evaluate_shape(xs: &[u32], expression: String) -> Result<Vec<u32>, meval::Error> {
-    let shape_fun = SimulationActor::parse_shape_fun(expression)?;
+fn evaluate_shape(xs: &[u32], expression: String) -> Result<Vec<u32>, SimulationError> {
+    let shape_fun = parse_shape_fun(expression)?;
     let res = xs.iter()
         .map(|x| shape_fun(*x as f64) as u32)
         .collect();

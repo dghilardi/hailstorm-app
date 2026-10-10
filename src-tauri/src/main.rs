@@ -10,8 +10,7 @@ use std::path::PathBuf;
 use actix::{Addr, System};
 use axum::{Extension, Router};
 use axum::routing::post;
-use hailstorm::agent::builder::AgentBuilder;
-use hailstorm::simulation::actor::simulation::SimulationParams;
+use hailstorm::agent::builder::{AgentBuilder, SimulationParams};
 use hailstorm::simulation::rune::extension;
 use hailstorm::simulation::rune::extension::env::EnvModuleConf;
 use hailstorm::simulation::rune::extension::storage::initializer::empty::EmptyInitializer;
@@ -26,29 +25,27 @@ use crate::hlst::tauri_upstream::TauriUpstream;
 
 mod rest;
 mod hlst;
+
+const LOCAL_AGENT_ID: u32 = 1998186;
+
 fn main() {
     env_logger::init();
 
     log::debug!("Initializing agent runtime");
     let (exit_snd, exit_rcv) = tokio::sync::oneshot::channel();
-    let handler = AgentBuilder {
-        agent_id: 1998186,
-        downstream: (),
-        upstream: [(String::from("tauri"), ())].into_iter().collect(),
-        rune_context_builder:  |_sim| {
+    let handler = AgentBuilder::default()
+        .agent_id(LOCAL_AGENT_ID)
+        .upstream([(String::from("tauri"), ())].into_iter().collect())
+        .rune_context_builder(|_sim| {
             let mut ctx = rune::Context::with_default_modules().expect("Error loading default rune modules");
-            ctx.install(&extension::storage::module(StorageModuleArgs { initializer: EmptyInitializer } ).expect("Error initializing storage extension module")).expect("Error loading storage extension module");
-            ctx.install(&extension::env::module(EnvModuleConf { prefix: Some(String::from("hsa")) }).expect("Error initializing env extension module")).expect("Error loading env extension module");
-
+            ctx.install(extension::storage::module(StorageModuleArgs::default().with_initializer(EmptyInitializer)).expect("Error initializing storage extension module")).expect("Error loading storage extension module");
+            ctx.install(extension::env::module(EnvModuleConf::default().with_prefix("hsa")).expect("Error initializing env extension module")).expect("Error loading env extension module");
             ctx
-        },
-        simulation_params: SimulationParams {
-            max_running: Some(1000),
-            max_rate: Some(100),
-        },
-    }.spawn::<TauriUpstream>(exit_rcv);
+        })
+        .simulation_params(SimulationParams::default().max_running(1000).max_rate(100))
+        .spawn::<TauriUpstream>(exit_rcv);
 
-    let client = handler.runtime.clients.get(0)
+    let client = handler.runtime.clients_ref().first()
         .expect("At least one client was expected")
         .clone();
 
