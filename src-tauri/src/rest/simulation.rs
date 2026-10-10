@@ -3,7 +3,7 @@ use std::time::SystemTime;
 use actix::Addr;
 use axum::{Extension, Json};
 use axum::response::IntoResponse;
-use hailstorm::controller::controller_actor::{ControllerActor, LoadSimulation, StartSimulation};
+use hailstorm::controller::message::{LoadSimulation, StartSimulation};
 use hailstorm::controller::model::simulation::{BotDef, SimulationDef};
 use serde::{Deserialize, Serialize};
 use crate::TauriUpstream;
@@ -16,10 +16,7 @@ pub struct SimulationUser {
 
 impl From<SimulationUser> for BotDef {
     fn from(dto: SimulationUser) -> Self {
-        Self {
-            model: dto.model,
-            shape: dto.shape,
-        }
+        Self::default().model(&dto.model).shape(&dto.shape)
     }
 }
 
@@ -42,10 +39,7 @@ pub enum ActionOutcome {
 
 impl From<LoadSimulationReqJson> for SimulationDef {
     fn from(req: LoadSimulationReqJson) -> Self {
-        Self {
-            bots: req.users.into_iter().map(Into::into).collect(),
-            script: req.script,
-        }
+        Self::default().bots(req.users.into_iter().map(Into::into).collect()).script(req.script)
     }
 }
 
@@ -53,7 +47,7 @@ pub async fn load_simulation(
     Json(req): Json<LoadSimulationReqJson>,
     Extension(client): Extension<Addr<TauriUpstream>>,
 ) -> impl IntoResponse {
-    let result = client.send(LoadSimulation(req.into())).await;
+    let result = client.send(LoadSimulation::new(req.into())).await;
     if let Err(err) = result {
         log::error!("Error loading simulation - {err}");
     }
@@ -63,7 +57,7 @@ pub async fn load_simulation(
 pub async fn start_simulation(
     Extension(client): Extension<Addr<TauriUpstream>>,
 ) -> impl IntoResponse {
-    let result = client.send(StartSimulation(SystemTime::now())).await;
+    let result = client.send(StartSimulation::at(SystemTime::now())).await;
     if let Err(err) = result {
         log::error!("Error starting simulation - {err}");
     }
