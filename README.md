@@ -25,8 +25,9 @@ and errors. Start requires a successful load of the current editor contents and
 confirmation that all agents are ready for the returned simulation identifier.
 Editing the script or curves requires loading the project again. Stop requests
 a shutdown; the UI waits for agents to leave running/stopping states before allowing
-another load. Older embedded backends returning `{ "outcome": "ok" }` and lacking
-status retain Load/Start and reload behavior; live status and Stop are unavailable.
+another load. The desktop embedded backend exposes the same status and stop APIs. Older
+embedded backends returning `{ "outcome": "ok" }` and lacking status retain
+Load/Start and reload behavior; live status and Stop are unavailable.
 
 ### Build and package
 

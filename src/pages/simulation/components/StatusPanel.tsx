@@ -34,6 +34,8 @@ export function StatusPanel() {
         </Typography>
         {supported === false && <Typography variant="caption">This backend does not support live status or Stop. Load and Start remain available.</Typography>}
         {error && <Alert severity="error" sx={{ mt: 1 }}>{error}</Alert>}
+        {status?.agents.filter(agent => agent.error && agent.simulation_id === status.simulation_id).map(agent =>
+            <Alert key={agent.agent_id} severity="error" sx={{ mt: 1 }}>Agent {agent.agent_id}: {agent.error}</Alert>)}
         {!!status?.agents.length && <details>
             <summary>{status.agents.length} agents · {status.agents.filter(agent => agent.simulation_id === status.simulation_id && agent.state === 'ready' && !agent.error).length} ready</summary>
             {status.agents.map(agent => <Typography key={agent.agent_id} variant="body2" sx={{ py: 0.5 }}>

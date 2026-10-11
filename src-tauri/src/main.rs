@@ -7,10 +7,11 @@ use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 
-use actix::{Addr, System};
+use actix::Addr;
 use axum::{Extension, Router};
-use axum::routing::post;
+use axum::routing::{get, post};
 use hailstorm::agent::builder::{AgentBuilder, SimulationParams};
+use hailstorm::controller::embedded::{EmbeddedUpstream, StartEmbeddedController};
 use hailstorm::simulation::rune::extension;
 use hailstorm::simulation::rune::extension::env::EnvModuleConf;
 use hailstorm::simulation::rune::extension::storage::initializer::empty::EmptyInitializer;
@@ -19,16 +20,11 @@ use tauri::menu::{Menu, MenuBuilder, MenuItemBuilder, SubmenuBuilder};
 use tauri::{App, AppHandle, Emitter, Wry};
 use tauri_plugin_cli::{CliExt, Matches};
 use tauri_plugin_fs::FsExt;
-use tauri::async_runtime::TokioRuntime;
-use tokio::time::{Duration, sleep};
 use tower_http::cors::CorsLayer;
 
-use crate::hlst::tauri_upstream::TauriUpstream;
-
 mod rest;
-mod hlst;
 
-const LOCAL_AGENT_ID: u32 = 1998186;
+pub(crate) const LOCAL_AGENT_ID: u32 = 1998186;
 
 fn main() {
     env_logger::init();
@@ -37,7 +33,7 @@ fn main() {
     let (exit_snd, exit_rcv) = tokio::sync::oneshot::channel();
     let handler = AgentBuilder::default()
         .agent_id(LOCAL_AGENT_ID)
-        .upstream([(String::from("tauri"), ())].into_iter().collect())
+        .upstream([(String::from("embedded"), ())].into_iter().collect())
         .rune_context_builder(|_sim| {
             let mut ctx = rune::Context::with_default_modules().expect("Error loading default rune modules");
             ctx.install(extension::storage::module(StorageModuleArgs::default().with_initializer(EmptyInitializer)).expect("Error initializing storage extension module")).expect("Error loading storage extension module");
@@ -45,7 +41,7 @@ fn main() {
             ctx
         })
         .simulation_params(SimulationParams::default().max_running(1000).max_rate(100))
-        .spawn::<TauriUpstream>(exit_rcv);
+        .spawn::<EmbeddedUpstream>(exit_rcv);
 
     let client = handler.runtime.clients_ref().first()
         .expect("At least one client was expected")
@@ -98,16 +94,21 @@ fn handle_args(app: &App<Wry>) {
     }
 }
 
-fn spawn_http_server(client: Addr<TauriUpstream>) -> impl std::future::Future<Output=()> + Send + 'static {
-    Box::pin(async {
+fn spawn_http_server(client: Addr<EmbeddedUpstream>) -> impl std::future::Future<Output=()> + Send + 'static {
+    Box::pin(async move {
         log::info!("Starting axum server");
+        let controller = client.send(StartEmbeddedController).await
+            .expect("Error starting the embedded controller");
         let cors = CorsLayer::permissive();
 
+        // Same routes, responses and errors as the hailstorm service controller.
         let app = Router::new()
             .route("/hailstorm/shape/compute", post(rest::expression::compute_shape))
             .route("/hailstorm/simulation/load", post(rest::simulation::load_simulation))
             .route("/hailstorm/simulation/start", post(rest::simulation::start_simulation))
-            .layer(Extension(client))
+            .route("/hailstorm/simulation/stop", post(rest::simulation::stop_simulation))
+            .route("/hailstorm/simulation/status", get(rest::simulation::simulation_status))
+            .layer(Extension(controller))
             .layer(cors);
 
         let addr = SocketAddr::from(([127, 0, 0, 1], 54321));
