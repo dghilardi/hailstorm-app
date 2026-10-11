@@ -3,8 +3,8 @@ import '@testing-library/jest-dom';
 import App from './App';
 import { useEditorStore } from 'store/editor';
 import { listen } from '@tauri-apps/api/event';
-import { readTextFile } from '@tauri-apps/api/fs';
-import { getMatches } from '@tauri-apps/api/cli';
+import { readTextFile } from '@tauri-apps/plugin-fs';
+import { getMatches } from '@tauri-apps/plugin-cli';
 
 jest.mock('@tauri-apps/api/event', () => ({ listen: jest.fn() }));
 jest.mock('./pages/simulation/components/Editor', () => () => <div>Rune editor</div>);
@@ -16,7 +16,7 @@ beforeEach(() => {
     global.fetch = jest.fn().mockResolvedValue({ ok: true, status: 200, text: async () => JSON.stringify({ outcome: 'idle', simulation_id: null, start_ts_ms: null, agents: [] }) });
 });
 
-afterEach(() => { delete (window as any).__TAURI_IPC__; });
+afterEach(() => { delete (window as any).isTauri; });
 
 test('browser startup exposes project actions and waits for a loaded project', async () => {
     render(<App />);
@@ -43,7 +43,7 @@ test('agent compilation failures remain visible and keep Start disabled', async 
 });
 
 test('desktop startup retains native menus, configuration and listener cleanup', async () => {
-    (window as any).__TAURI_IPC__ = jest.fn();
+    (window as any).isTauri = true;
     const unlisten = jest.fn();
     (listen as jest.Mock).mockResolvedValue(unlisten);
     (readTextFile as jest.Mock).mockResolvedValue('backends:\n  - name: Embedded\n    hostname: localhost\n    port: 54321');
@@ -57,7 +57,7 @@ test('desktop startup retains native menus, configuration and listener cleanup',
 });
 
 test('desktop command-line project errors are shown instead of becoming unhandled rejections', async () => {
-    (window as any).__TAURI_IPC__ = jest.fn();
+    (window as any).isTauri = true;
     (listen as jest.Mock).mockResolvedValue(jest.fn());
     (getMatches as jest.Mock).mockResolvedValue({ args: { project: { value: '/missing.hsp' } } });
     (readTextFile as jest.Mock).mockImplementation((path: string) => path === '/missing.hsp'

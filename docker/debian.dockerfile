@@ -1,9 +1,9 @@
-FROM rust:1.62.1-slim-bullseye as image
+FROM rust:1.88-slim-bookworm as image
 
 ARG SSH_DEPLOY_KEY
 
 RUN apt-get update -yqq && \
-    apt-get install -yqq --no-install-recommends gnupg build-essential curl openssh-client wget libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev cmake libjavascriptcoregtk-4.0-dev libsoup2.4-dev libwebkit2gtk-4.0-dev && \
+    apt-get install -yqq --no-install-recommends gnupg build-essential curl openssh-client wget libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev cmake protobuf-compiler libjavascriptcoregtk-4.1-dev libsoup-3.0-dev libwebkit2gtk-4.1-dev && \
     curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
     echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list && \
     curl -fsSL https://deb.nodesource.com/setup_current.x | bash - && \

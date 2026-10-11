@@ -1,5 +1,5 @@
 import { confirmSave, openProject, saveProject } from 'services/platform';
-import { readTextFile } from '@tauri-apps/api/fs';
+import { readTextFile } from '@tauri-apps/plugin-fs';
 import { DEFAULT_PROJECT, EditorStateGetter, EditorStateSetter, HailstormProject, HailstormProjectType } from 'store/editor';
 import { parse, stringify } from 'yaml';
 import { fold } from 'fp-ts/lib/Either';

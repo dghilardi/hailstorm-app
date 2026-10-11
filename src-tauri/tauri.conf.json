@@ -3,34 +3,38 @@
   "build": {
     "beforeBuildCommand": "yarn build",
     "beforeDevCommand": "yarn start",
-    "devPath": "http://localhost:3000",
-    "distDir": "../build"
+    "frontendDist": "../build",
+    "devUrl": "http://localhost:3000"
   },
-  "package": {
-    "productName": "hailstorm-app",
-    "version": "0.2.2"
-  },
-  "tauri": {
-    "allowlist": {
-      "dialog": {
-        "open": true,
-        "save": true,
-        "ask": true
-      },
-      "fs": {
-        "scope": [
-          "$CONFIG/hailstorm-app",
-          "$CONFIG/hailstorm-app/*"
-        ],
-        "createDir": true,
-        "readFile": true,
-        "writeFile": true
-      }
+  "bundle": {
+    "active": true,
+    "category": "DeveloperTool",
+    "copyright": "",
+    "targets": "all",
+    "externalBin": [],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": ""
     },
-    "bundle": {
-      "active": true,
-      "category": "DeveloperTool",
-      "copyright": "",
+    "longDescription": "",
+    "macOS": {
+      "entitlements": null,
+      "exceptionDomain": "",
+      "frameworks": [],
+      "providerShortName": null,
+      "signingIdentity": null
+    },
+    "resources": [],
+    "shortDescription": "",
+    "linux": {
       "deb": {
         "depends": [],
         "files": {
@@ -40,48 +44,14 @@
           "/usr/share/icons/hicolor/128x128/apps/hailstorm-hsp.png": "icons/hsp/128x128.png",
           "/usr/share/icons/hicolor/256x256/apps/hailstorm-hsp.png": "icons/hsp/128x128@2x.png"
         }
-      },
-      "externalBin": [],
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "identifier": "dev.d71.hailstorm",
-      "longDescription": "",
-      "macOS": {
-        "entitlements": null,
-        "exceptionDomain": "",
-        "frameworks": [],
-        "providerShortName": null,
-        "signingIdentity": null
-      },
-      "resources": [],
-      "shortDescription": "",
-      "targets": "all",
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": ""
       }
-    },
-    "security": {
-      "csp": null
-    },
-    "updater": {
-      "active": false
-    },
-    "windows": [
-      {
-        "fullscreen": false,
-        "height": 600,
-        "resizable": true,
-        "title": "Hailstorm",
-        "width": 800
-      }
-    ],
+    }
+  },
+  "productName": "hailstorm-app",
+  "mainBinaryName": "hailstorm-app",
+  "version": "0.2.2",
+  "identifier": "dev.d71.hailstorm",
+  "plugins": {
     "cli": {
       "description": "Hailstorm app lets you define your simulations",
       "args": [
@@ -92,6 +62,21 @@
           "multiple": false
         }
       ]
+    }
+  },
+  "app": {
+    "windows": [
+      {
+        "fullscreen": false,
+        "height": 600,
+        "resizable": true,
+        "title": "Hailstorm",
+        "width": 800,
+        "useHttpsScheme": true
+      }
+    ],
+    "security": {
+      "csp": null
     }
   }
 }

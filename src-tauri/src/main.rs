@@ -15,8 +15,10 @@ use hailstorm::simulation::rune::extension;
 use hailstorm::simulation::rune::extension::env::EnvModuleConf;
 use hailstorm::simulation::rune::extension::storage::initializer::empty::EmptyInitializer;
 use hailstorm::simulation::rune::extension::storage::StorageModuleArgs;
-use tauri::{App, CustomMenuItem, Manager, Menu, Submenu, Wry};
-use tauri::api::cli::Matches;
+use tauri::menu::{Menu, MenuBuilder, MenuItemBuilder, SubmenuBuilder};
+use tauri::{App, AppHandle, Emitter, Wry};
+use tauri_plugin_cli::{CliExt, Matches};
+use tauri_plugin_fs::FsExt;
 use tauri::async_runtime::TokioRuntime;
 use tokio::time::{Duration, sleep};
 use tower_http::cors::CorsLayer;
@@ -51,10 +53,14 @@ fn main() {
 
 
     tauri::Builder::default()
-        .menu(build_window_menu())
-        .on_menu_event(|event| {
-            let e: &str = event.menu_item_id();
-            event.window().emit("menu_event", e).unwrap();
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_cli::init())
+        .plugin(tauri_plugin_dialog::init())
+        .menu(build_window_menu)
+        .on_menu_event(|app, event| {
+            if let Err(err) = app.emit("menu_event", event.id().as_ref()) {
+                log::error!("Error emitting menu event - {err}");
+            }
         })
         .setup(|app| {
             handle_args(&app);
@@ -72,7 +78,7 @@ fn main() {
 }
 
 fn handle_args(app: &App<Wry>) {
-    match app.get_cli_matches() {
+    match app.cli().matches() {
         // `matches` here is a Struct with { args, subcommand }.
         // `args` is `HashMap<String, ArgData>` where `ArgData` is a struct with { value, occurances }.
         // `subcommand` is `Option<Box<SubcommandMatches>>` where `SubcommandMatches` is a struct with { name, matches }.
@@ -81,8 +87,9 @@ fn handle_args(app: &App<Wry>) {
                 .and_then(|p| p.value.as_str())
                 .map(|path_str| PathBuf::from(path_str.to_string()));
             if let Some(project_path) = maybe_project {
-                app.fs_scope().allow_file(project_path)
-                    .expect("Error adding project to allowlist");
+                if let Err(err) = app.fs_scope().allow_file(project_path) {
+                    log::error!("Error adding project to allowlist - {err}");
+                }
             }
         }
         Err(err) => {
@@ -112,22 +119,25 @@ fn spawn_http_server(client: Addr<TauriUpstream>) -> impl std::future::Future<Ou
     })
 }
 
-fn build_window_menu() -> Menu {
-    let file_new = CustomMenuItem::new("new".to_string(), "New");
-    let file_open = CustomMenuItem::new("open".to_string(), "Open")
-        .accelerator("CmdOrControl+O");
-    let file_save = CustomMenuItem::new("save".to_string(), "Save")
-        .accelerator("CmdOrControl+S");
-    let file_save_as = CustomMenuItem::new("save-as", "Save As...")
-        .accelerator("CmdOrControl+Shift+S");
-    let file_menu = Submenu::new("File",
-                                 Menu::new()
-                                     .add_item(file_new)
-                                     .add_item(file_open)
-                                     .add_item(file_save)
-                                     .add_item(file_save_as),
-    );
+fn build_window_menu(handle: &AppHandle) -> tauri::Result<Menu<Wry>> {
+    let file_new = MenuItemBuilder::with_id("new", "New").build(handle)?;
+    let file_open = MenuItemBuilder::with_id("open", "Open")
+        .accelerator("CmdOrControl+O")
+        .build(handle)?;
+    let file_save = MenuItemBuilder::with_id("save", "Save")
+        .accelerator("CmdOrControl+S")
+        .build(handle)?;
+    let file_save_as = MenuItemBuilder::with_id("save-as", "Save As...")
+        .accelerator("CmdOrControl+Shift+S")
+        .build(handle)?;
+    let file_menu = SubmenuBuilder::new(handle, "File")
+        .item(&file_new)
+        .item(&file_open)
+        .item(&file_save)
+        .item(&file_save_as)
+        .build()?;
 
-    Menu::new()
-        .add_submenu(file_menu)
+    MenuBuilder::new(handle)
+        .item(&file_menu)
+        .build()
 }
