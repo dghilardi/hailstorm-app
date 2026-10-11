@@ -1694,8 +1694,9 @@ dependencies = [
 
 [[package]]
 name = "hailstorm"
-version = "0.3.0"
-source = "git+https://github.com/dghilardi/hailstorm.git?rev=405f9c7ea8aba04502a00ddddcf51b3fe723781e#405f9c7ea8aba04502a00ddddcf51b3fe723781e"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d22beb085ceaf5b23131e2069fe858b7df67dd5e83392a30f5fd97d106145931"
 dependencies = [
  "actix",
  "csv",
@@ -3657,9 +3658,9 @@ dependencies = [
 
 [[package]]
 name = "ringbuf"
-version = "0.4.8"
+version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fe47b720588c8702e34b5979cb3271a8b1842c7cb6f57408efa70c779363488c"
+checksum = "b58b631e416dd7d84549d7e6a50f767e111f9b03e30d04f40072f6618f386aaf"
 dependencies = [
  "crossbeam-utils",
  "portable-atomic",

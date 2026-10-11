@@ -37,8 +37,9 @@ test('agent compilation failures remain visible and keep Start disabled', async 
     }) });
     render(<App />);
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Failed'));
+    expect(screen.getByRole('alert')).toHaveTextContent('Agent 7: Missing mqtt module');
     fireEvent.click(screen.getByText('1 agents · 0 ready'));
-    expect(screen.getByText(/Missing mqtt module/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Missing mqtt module/)).toHaveLength(2);
     expect(screen.getByRole('button', { name: 'Start' })).toBeDisabled();
 });
 
