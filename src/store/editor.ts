@@ -65,7 +65,7 @@ export interface EditorState {
   openSnackbar: (message: string, severity: AlertColor) => void,
   closeSnackbar: () => void,
   handleMenuEvent: (event_id: string) => void,
-  loadSimulationFile: (path: string) => void,
+  loadSimulationFile: (path: string) => Promise<void>,
   updateEditorView: (view: EditorView) => void,
   updateSelectedBackend: (idx: number) => void,
   updateScript: (script: string) => void,

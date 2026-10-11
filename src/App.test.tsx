@@ -55,3 +55,14 @@ test('desktop startup retains native menus, configuration and listener cleanup',
     unmount();
     await waitFor(() => expect(unlisten).toHaveBeenCalledTimes(1));
 });
+
+test('desktop command-line project errors are shown instead of becoming unhandled rejections', async () => {
+    (window as any).__TAURI_IPC__ = jest.fn();
+    (listen as jest.Mock).mockResolvedValue(jest.fn());
+    (getMatches as jest.Mock).mockResolvedValue({ args: { project: { value: '/missing.hsp' } } });
+    (readTextFile as jest.Mock).mockImplementation((path: string) => path === '/missing.hsp'
+        ? Promise.reject(new Error('Project file is missing'))
+        : Promise.resolve('backends:\n  - name: Embedded\n    hostname: localhost\n    port: 54321'));
+    render(<App />);
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Project file is missing'));
+});

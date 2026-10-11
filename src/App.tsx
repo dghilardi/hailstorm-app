@@ -28,7 +28,7 @@ export default function App() {
   useEffect(() => {
     readParams().then(params => {
       if (params.projectPath) {
-        loadFile(params.projectPath);
+        return loadFile(params.projectPath);
       }
     }).catch(error => openSnackbar(String(error), 'error'));
   }, [loadFile, openSnackbar]);
