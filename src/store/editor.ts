@@ -3,9 +3,11 @@ import create from 'zustand'
 import { devtools } from 'zustand/middleware'
 import * as t from 'io-ts'
 import { AlertColor } from '@mui/material';
-import { fold } from 'fp-ts/lib/Either';
-import { pipe } from 'fp-ts/lib/function';
-import { HailstormConfigType } from 'services/config';
+import { defaultConfig, HailstormConfigType } from 'services/config';
+import * as api from 'services/hailstorm';
+import { ActionOutcomeType, HailstormBackendType } from 'services/hailstorm';
+export { HailstormBackend } from 'services/hailstorm';
+export type { ActionOutcomeType, HailstormBackendType } from 'services/hailstorm';
 
 export const ModelExpression = t.type({
   model: t.string,
@@ -19,30 +21,11 @@ export const HailstormProject = t.type({
 
 export type HailstormProjectType = t.TypeOf<typeof HailstormProject>;
 
-export const ActionOutcome = t.intersection([
-  t.type({
-    outcome: t.string
-  }),
-  t.partial({
-    message: t.string,
-  })
-]);
-
-export type ActionOutcomeType = t.TypeOf<typeof ActionOutcome>;
-
 export interface SnackbarParams {
   severity: AlertColor | undefined,
   message: string,
   open: boolean,
 }
-
-export const HailstormBackend = t.type({
-  name: t.string,
-  hostname: t.string,
-  port: t.number,
-});
-
-export type HailstormBackendType = t.TypeOf<typeof HailstormBackend>;
 
 interface ExpressionDefinition {
   model: string,
@@ -117,11 +100,7 @@ export type EditorStateSetter = (stateUpdater: (state: EditorState) => EditorSta
 
 export const useEditorStore = create<EditorState>()(
   devtools((set, get) => ({
-    backends: [{
-      name: 'Embedded',
-      hostname: 'localhost',
-      port: 54321,
-    }],
+    backends: defaultConfig().backends,
     selectedBackend: 0,
     filePath: null,
     editorView: 'editor',
@@ -144,7 +123,10 @@ export const useEditorStore = create<EditorState>()(
       const snackbar = { message: state.snackbar.message, severity: state.snackbar.severity, open: false };
       return { ...state, snackbar };
     }),
-    handleMenuEvent: async (eventId) => await handleMenuEvent(get, set, eventId),
+    handleMenuEvent: async (eventId) => {
+      try { await handleMenuEvent(get, set, eventId); }
+      catch (error) { get().openSnackbar(error instanceof Error ? error.message : String(error), 'error'); }
+    },
     loadSimulationFile: async (path) => await loadSimulationFile(path, false, get, set),
     updateEditorView: (view) => set(state => ({ ...state, editorView: view })),
     updateSelectedBackend: (idx: number) => set(state => ({ ...state, selectedBackend: idx })),
@@ -165,22 +147,11 @@ export const useEditorStore = create<EditorState>()(
       const expressions = state.expressions.filter((_, itemIdx) => itemIdx !== idx);
       return { ...state, expressions }
     }),
-    updateConfig: (config) => set(state => ({ ...state, backends: config.backends })),
+    updateConfig: (config) => set(state => ({ ...state, backends: config.backends, selectedBackend: 0 })),
     fetchChartData: async () => {
       const expr = get().expressions;
       const backend = get().backends[get().selectedBackend];
-      const resp = await fetch(`http://${backend.hostname}:${backend.port}/hailstorm/shape/compute`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          xmax: 3600,
-          resolution: 200,
-          models: expr.reduce((acc, entry) => ({ ...acc, [entry.model]: entry.expression }), {})
-        })
-      });
-      let parsed = await resp.json();
+      const parsed = await api.computeShape(backend, expr.reduce((acc, entry) => ({ ...acc, [entry.model]: entry.expression }), {}));
       set(state => ({
         ...state, chartData: {
           xs: parsed.x,
@@ -192,29 +163,11 @@ export const useEditorStore = create<EditorState>()(
       const script = get().script;
       const users = get().expressions.map(({ model, expression }) => ({ model, shape: expression }));
       const backend = get().backends[get().selectedBackend];
-      const resp = await fetch(`http://${backend.hostname}:${backend.port}/hailstorm/simulation/load`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          script,
-          users,
-        })
-      });
-      let respObj = await resp.json();
-      return pipe(ActionOutcome.decode(respObj), fold(e => ({ outcome: 'error', message: `parsing error` }), ok => ok));
+      return api.loadSimulation(backend, script, users);
     },
     launchSimulation: async () => {
       const backend = get().backends[get().selectedBackend];
-      const resp = await fetch(`http://${backend.hostname}:${backend.port}/hailstorm/simulation/start`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      let respObj = await resp.json();
-      return pipe(ActionOutcome.decode(respObj), fold(e => ({ outcome: 'error', message: `parsing error` }), ok => ok));
+      return api.startSimulation(backend);
     },
   }))
 )
