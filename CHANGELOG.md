@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Support browser startup, project import/export and same-origin controller APIs while retaining desktop configuration and file handling.
+- Support browser startup, project import/export, same-origin controller APIs and agent status with guarded simulation controls while retaining desktop configuration and file handling.
 
 ### Changed
 - Refresh desktop build workflows and run the agent integration test on Linux, macOS and Windows.

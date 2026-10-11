@@ -75,6 +75,19 @@ const LoadResponse = t.union([
 ]);
 const OperationResponse = t.type({ outcome: t.literal('ok') });
 const ShapeResponse = t.type({ x: t.array(t.number), y: t.record(t.string, t.array(t.number)) });
+const SimulationStatus = t.type({
+    outcome: t.keyof({ idle: null, pending: null, ready: null, running: null, failed: null }),
+    simulation_id: t.union([t.string, t.null]),
+    start_ts_ms: t.union([t.number, t.null]),
+    agents: t.array(t.type({
+        agent_id: t.number,
+        state: t.string,
+        simulation_id: t.string,
+        error: t.union([t.string, t.null]),
+        last_update_ms: t.number,
+    })),
+});
+export type SimulationStatusType = t.TypeOf<typeof SimulationStatus>;
 
 export async function loadSimulation(backend: HailstormBackendType, script: string, users: { model: string, shape: string }[]): Promise<ActionOutcomeType> {
     const response = decode(LoadResponse, await request(backend, 'simulation/load', { script, users }));
@@ -87,4 +100,17 @@ export async function startSimulation(backend: HailstormBackendType): Promise<Ac
 
 export async function computeShape(backend: HailstormBackendType, models: Record<string, string>) {
     return decode(ShapeResponse, await request(backend, 'shape/compute', { xmax: 3600, resolution: 200, models }));
+}
+
+export async function stopSimulation(backend: HailstormBackendType): Promise<ActionOutcomeType> {
+    return decode(OperationResponse, await request(backend, 'simulation/stop'));
+}
+
+export async function simulationStatus(backend: HailstormBackendType): Promise<SimulationStatusType | null> {
+    try {
+        return decode(SimulationStatus, await request(backend, 'simulation/status', undefined, 'GET'));
+    } catch (error) {
+        if (error instanceof ApiError && (error.status === 404 || error.status === 405)) return null;
+        throw error;
+    }
 }
