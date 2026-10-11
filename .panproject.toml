@@ -1,0 +1,18 @@
+[vcs]
+software = "Git"
+
+[modules.app]
+path = "."
+packageManager = "Npm"
+main = true
+
+[modules.desktop]
+path = "src-tauri"
+packageManager = "Cargo"
+
+[modules.tauri-conf]
+path = "src-tauri"
+packageManager = "Generic"
+file = "tauri.conf.json"
+format = "json"
+versionField = "version"
