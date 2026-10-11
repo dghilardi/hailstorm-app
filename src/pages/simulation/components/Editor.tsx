@@ -1,4 +1,4 @@
-import Editor, { Monaco, useMonaco } from "@monaco-editor/react";
+import Editor, { loader, Monaco, useMonaco } from "@monaco-editor/react";
 
 import { editor, languages } from "monaco-editor";
 import { useEffect } from "react";
@@ -6,6 +6,8 @@ import { useEditorStore } from "store/editor";
 
 import gruvbox_dark from 'theme/monaco-gruvbox-dark';
 import gruvbox_light from 'theme/monaco-gruvbox-light';
+
+loader.config({ paths: { vs: `${process.env.PUBLIC_URL || '.'}/monaco/vs` } });
 
 export const runeConf: languages.LanguageConfiguration = {
 	"comments": {
@@ -379,6 +381,7 @@ function configureMonaco(monaco: Monaco) {
 }
 
 const opts: editor.IStandaloneEditorConstructionOptions = {
+	automaticLayout: true,
 	theme: 'gruvbox-dark',
 	minimap: {
 		enabled: false,

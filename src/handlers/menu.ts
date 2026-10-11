@@ -1,13 +1,9 @@
-import { save, open, DialogFilter, ask } from '@tauri-apps/api/dialog';
-import { readTextFile, writeTextFile } from '@tauri-apps/api/fs';
+import { confirmSave, openProject, saveProject } from 'services/platform';
+import { readTextFile } from '@tauri-apps/api/fs';
 import { DEFAULT_PROJECT, EditorStateGetter, EditorStateSetter, HailstormProject, HailstormProjectType } from 'store/editor';
 import { parse, stringify } from 'yaml';
 import { fold } from 'fp-ts/lib/Either';
 import { pipe } from 'fp-ts/lib/function';
-
-const FILE_FILTERS_HAILSTORM_PROJECT: DialogFilter[] = [
-    { name: 'Hailstorm project', extensions: ['hsp'] }
-];
 
 export async function handleMenuEvent(get: EditorStateGetter, set: EditorStateSetter, eventId: string) {
     switch (eventId) {
@@ -18,7 +14,7 @@ export async function handleMenuEvent(get: EditorStateGetter, set: EditorStateSe
             await doOpen(get, set);
             break;
         case 'save':
-            await doSave(get, set);
+            if (!await doSave(get, set)) return;
             break;
         case 'save-as':
             await doSaveAs(get, set);
@@ -30,9 +26,9 @@ export async function handleMenuEvent(get: EditorStateGetter, set: EditorStateSe
 }
 
 async function doNew(get: EditorStateGetter, set: EditorStateSetter) {
-    const saveCurrent = await ask('Do you want to save the current project?');
+    const saveCurrent = await confirmSave();
     if (saveCurrent) {
-        await doSave(get, set);
+        if (!await doSave(get, set)) return;
     }
     set(state => ({
         ...state,
@@ -43,51 +39,40 @@ async function doNew(get: EditorStateGetter, set: EditorStateSetter) {
 }
 
 async function doOpen(get: EditorStateGetter, set: EditorStateSetter) {
-    const path = await open({ multiple: false, filters: FILE_FILTERS_HAILSTORM_PROJECT });
-    if (path !== null) {
-        loadSimulationFile(path as string, true, get, set);
-    }
+    const file = await openProject();
+    if (file) await loadProjectContent(file.content, file.path, true, get, set);
 }
 
 export async function loadSimulationFile(path: string, askSaveCurrent: boolean, get: EditorStateGetter, set: EditorStateSetter) {
-    const content = await readTextFile(path as string);
-    const parsed = parseProject(content);
-    if (parsed !== null) {
-        const saveCurrent = askSaveCurrent ? await ask('Do you want to save the current project?') : false;
-        if (saveCurrent) {
-            await doSave(get, set);
-        }
-        set(state => ({
-            ...state,
-            filePath: path as string,
-            script: parsed.script,
-            expressions: parsed.behaviour,
-        }));
-    }
+    await loadProjectContent(await readTextFile(path), path, askSaveCurrent, get, set);
 }
 
-async function doSave(get: EditorStateGetter, set: EditorStateSetter) {
-    let projectPath = get().filePath;
-    if (projectPath === null) {
-        projectPath = await save({ filters: FILE_FILTERS_HAILSTORM_PROJECT });
-        set((state) => ({ ...state, filePath: projectPath }));
-    }
-    await writeProject({ script: get().script, behaviour: get().expressions }, projectPath);
+async function loadProjectContent(content: string, path: string, askSaveCurrent: boolean, get: EditorStateGetter, set: EditorStateSetter) {
+    const parsed = parseProject(content);
+    if (parsed === null) throw new Error('Invalid Hailstorm project: expected a script and behaviour list.');
+    if (askSaveCurrent && await confirmSave() && !await doSave(get, set)) return;
+    set(state => ({
+        ...state,
+        filePath: path,
+        script: parsed.script,
+        expressions: parsed.behaviour,
+    }));
+}
+
+async function doSave(get: EditorStateGetter, set: EditorStateSetter, saveAs = false): Promise<boolean> {
+    const content = stringify({ script: get().script, behaviour: get().expressions });
+    const projectPath = await saveProject(content, get().filePath, saveAs);
+    if (projectPath === null) return false;
+    set(state => ({ ...state, filePath: projectPath }));
+    return true;
 }
 
 async function doSaveAs(get: EditorStateGetter, set: EditorStateSetter) {
-    const projectPath = await save({ filters: FILE_FILTERS_HAILSTORM_PROJECT });
-    await writeProject({ script: get().script, behaviour: get().expressions }, projectPath);
-    set((state) => ({ ...state, filePath: projectPath }));
+    await doSave(get, set, true);
 }
 
 function parseProject(projectStr: string): HailstormProjectType | null {
     const parsed = parse(projectStr);
     const projectResult = HailstormProject.decode(parsed);
     return pipe(projectResult, fold(e => null, p => p));
-}
-
-async function writeProject(project: HailstormProjectType, path: string) {
-    const serialized = stringify(project);
-    await writeTextFile(path, serialized);
 }

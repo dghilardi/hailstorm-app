@@ -24,13 +24,16 @@ const CHART_COLORS = [
 export function ChartPanel() {
     const expressions = useEditorStore(store => store.expressions);
     const fetchChartData = useEditorStore(store => store.fetchChartData);
+    const backendEpoch = useEditorStore(store => store.backendEpoch);
+    const openSnackbar = useEditorStore(store => store.openSnackbar);
     const debouncer = useMemo(() => {
         return debounce((callback: () => void) => callback(), 500, { isImmediate: true, maxWait: 1500 });
     }, []);
     const chartData = useEditorStore(store => store.chartData);
     useEffect(() => { 
-        debouncer(fetchChartData);
-    }, [expressions, fetchChartData, debouncer]);
+        debouncer(() => fetchChartData().catch(error => openSnackbar(error instanceof Error ? error.message : 'Could not compute the load curve', 'error')));
+        return () => debouncer.cancel();
+    }, [expressions, fetchChartData, debouncer, backendEpoch, openSnackbar]);
 
     const data = chartData.xs.map((v, idx) => ({
         name: fmtTimestamp(v),

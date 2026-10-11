@@ -7,7 +7,33 @@ permissions:
   contents: write
 
 jobs:
+  build-web:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+    - name: Check release version matches the app
+      run: node -e 'if (require("./package.json").version !== process.env.GITHUB_REF_NAME) throw new Error("Tag must match package.json version")'
+    - name: Install frontend dependencies
+      run: yarn install --frozen-lockfile --non-interactive
+    - name: Test frontend
+      run: yarn test --watchAll=false --runInBand
+      env:
+        CI: true
+    - name: Package web frontend
+      run: yarn package:web "$GITHUB_REF_NAME"
+      env:
+        CI: true
+    - uses: actions/upload-artifact@v4
+      with:
+        name: hailstorm-web
+        path: artifacts/hailstorm-web-*
+        if-no-files-found: error
+
   publish-tauri:
+    needs: build-web
     strategy:
       fail-fast: false
       matrix:
@@ -33,6 +59,7 @@ jobs:
       uses: arduino/setup-protoc@v3
       with:
         version: '25.3'
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
     - name: install dependencies (ubuntu only)
       if: matrix.platform == 'ubuntu-22.04'
       run: |
@@ -49,3 +76,16 @@ jobs:
         releaseBody: '${{ steps.changelog.outputs.content }}'
         releaseDraft: true
         prerelease: false
+
+  publish-web:
+    needs: [build-web, publish-tauri]
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: hailstorm-web
+        path: artifacts
+    - name: Attach web frontend to the desktop draft release
+      run: gh release upload "app-v$GITHUB_REF_NAME" artifacts/hailstorm-web-* --repo "$GITHUB_REPOSITORY"
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
