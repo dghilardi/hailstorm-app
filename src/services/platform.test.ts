@@ -15,7 +15,7 @@ afterEach(() => {
 
 test('browser startup uses the controller on the page origin without native calls', async () => {
     expect(isDesktop()).toBe(false);
-    await expect(loadConfig()).resolves.toEqual({ backends: [{ name: 'Controller', baseUrl: '' }] });
+    await expect(loadConfig()).resolves.toEqual({ backends: [{ name: 'Controller', baseUrl: '/api' }] });
     expect(readTextFile).not.toHaveBeenCalled();
 });
 

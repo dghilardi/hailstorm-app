@@ -40,6 +40,6 @@ export function defaultConfig(): HailstormConfigType {
             name: 'Embedded',
             hostname: 'localhost',
             port: 54321,
-        }] : [{ name: 'Controller', baseUrl: '' }],
+        }] : [{ name: 'Controller', baseUrl: '/api' }],
     };
 }

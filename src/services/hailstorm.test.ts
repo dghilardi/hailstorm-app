@@ -1,6 +1,6 @@
 import { ApiError, backendUrl, computeShape, HailstormBackend, loadSimulation, startSimulation } from './hailstorm';
 
-const backend = { name: 'Controller', baseUrl: '' };
+const backend = { name: 'Controller', baseUrl: '/api' };
 const fetchMock = jest.fn();
 
 function reply(body: unknown, status = 200) {
@@ -16,7 +16,7 @@ test('loads a controller simulation using the returned run identifier', async ()
     reply({ simulation_id: 'run-7' });
     const users = [{ model: 'Bot', shape: '10' }];
     await expect(loadSimulation(backend, 'struct Bot;', users)).resolves.toEqual({ outcome: 'ok', simulation_id: 'run-7' });
-    expect(fetchMock).toHaveBeenCalledWith('/hailstorm/simulation/load', expect.objectContaining({
+    expect(fetchMock).toHaveBeenCalledWith('/api/hailstorm/simulation/load', expect.objectContaining({
         method: 'POST', body: JSON.stringify({ script: 'struct Bot;', users }),
     }));
 });
@@ -38,6 +38,11 @@ test('accepts old desktop config and explicit HTTPS backend URLs', () => {
 
 test('rejects HTTP errors even when the body resembles a successful operation', async () => {
     reply({ outcome: 'ok', message: 'No simulation is loaded' }, 409);
+    await expect(startSimulation(backend)).rejects.toThrow('No simulation is loaded');
+});
+
+test('reports controller error messages', async () => {
+    reply({ errorCode: 'HAILSTORM:SIMULATION:NOT_LOADED', errorMessage: 'No simulation is loaded', payload: null }, 409);
     await expect(startSimulation(backend)).rejects.toThrow('No simulation is loaded');
 });
 

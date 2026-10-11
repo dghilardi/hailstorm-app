@@ -49,7 +49,7 @@ async function request(backend: HailstormBackendType, path: string, body?: unkno
             throw new ApiError(response.ok ? 'The backend returned invalid JSON.' : `HTTP ${response.status}: ${text || response.statusText}`, response.status);
         }
         if (!response.ok) {
-            const message = data?.message || data?.error?.message;
+            const message = data?.errorMessage || data?.message || data?.error?.message;
             throw new ApiError(typeof message === 'string' ? message : `HTTP ${response.status}: ${text}`, response.status);
         }
         return data;
