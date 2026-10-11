@@ -12,6 +12,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Refresh desktop build workflows, authenticate Protoc downloads and run the agent integration test on Linux, macOS and Windows.
-- Align the desktop agent with Hailstorm 0.3 and Rune 0.14 using the public builder and command APIs, and update the compatible Tauri 1 runtime for current Linux builds.
+- Align the desktop agent with Hailstorm 0.3 and Rune 0.14 using the public builder and command APIs, and upgrade to Tauri 2 (webkit2gtk-4.1) with CLI, dialog and file system plugins for current Linux builds.
 
 ## [0.2.2] 2022-10-05

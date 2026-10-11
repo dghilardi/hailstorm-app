@@ -9,7 +9,10 @@
     "@monaco-editor/react": "^4.4.5",
     "@mui/icons-material": "^5.8.4",
     "@mui/material": "^5.9.2",
-    "@tauri-apps/api": "^1.0.2",
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-cli": "^2",
+    "@tauri-apps/plugin-dialog": "^2",
+    "@tauri-apps/plugin-fs": "^2",
     "@tauri-apps/tauricon": "^1.0.2",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",
@@ -58,7 +61,7 @@
     ]
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^1.0.5",
+    "@tauri-apps/cli": "^2",
     "cross-env": "^7.0.3"
   }
 }

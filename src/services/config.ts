@@ -1,5 +1,4 @@
-import { BaseDirectory } from '@tauri-apps/api/fs';
-import { readTextFile, writeTextFile, createDir } from '@tauri-apps/api/fs';
+import { BaseDirectory, mkdir, readTextFile, writeTextFile } from '@tauri-apps/plugin-fs';
 import YAML from 'yaml';
 import * as t from 'io-ts';
 import { HailstormBackend } from 'services/hailstorm';
@@ -19,12 +18,12 @@ export async function loadConfig(): Promise<HailstormConfigType> {
     if (!isDesktop()) return defaultConfig();
     let configStr;
     try {
-        configStr = await readTextFile(CONFIG_FILE_PATH, { dir: BaseDirectory.Config });
+        configStr = await readTextFile(CONFIG_FILE_PATH, { baseDir: BaseDirectory.Config });
     } catch (err) {
         console.warn('Config file not found, creating a new one!');
-        await createDir(CONFIG_DIR_PATH, { dir: BaseDirectory.Config, recursive: true });
+        await mkdir(CONFIG_DIR_PATH, { baseDir: BaseDirectory.Config, recursive: true });
         const defaultConfigStr = YAML.stringify(defaultConfig());
-        await writeTextFile(CONFIG_FILE_PATH, defaultConfigStr, { dir: BaseDirectory.Config });
+        await writeTextFile(CONFIG_FILE_PATH, defaultConfigStr, { baseDir: BaseDirectory.Config });
         configStr = defaultConfigStr;
     }
     try {

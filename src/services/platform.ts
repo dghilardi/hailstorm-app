@@ -1,10 +1,12 @@
+import { isTauri } from '@tauri-apps/api/core';
+
 export function isDesktop(): boolean {
-    return '__TAURI_IPC__' in window || '__TAURI__' in window;
+    return isTauri();
 }
 
 export async function confirmSave(): Promise<boolean> {
     if (isDesktop()) {
-        const { ask } = await import('@tauri-apps/api/dialog');
+        const { ask } = await import('@tauri-apps/plugin-dialog');
         return ask('Do you want to save the current project?');
     }
     return window.confirm('Do you want to export the current project before continuing?');
@@ -12,8 +14,8 @@ export async function confirmSave(): Promise<boolean> {
 
 export async function openProject(): Promise<{ path: string, content: string } | null> {
     if (isDesktop()) {
-        const { open } = await import('@tauri-apps/api/dialog');
-        const { readTextFile } = await import('@tauri-apps/api/fs');
+        const { open } = await import('@tauri-apps/plugin-dialog');
+        const { readTextFile } = await import('@tauri-apps/plugin-fs');
         const path = await open({ multiple: false, filters: [{ name: 'Hailstorm project', extensions: ['hsp'] }] });
         return typeof path === 'string' ? { path, content: await readTextFile(path) } : null;
     }
@@ -37,8 +39,8 @@ export async function openProject(): Promise<{ path: string, content: string } |
 
 export async function saveProject(content: string, path: string | null, saveAs = false): Promise<string | null> {
     if (isDesktop()) {
-        const { save } = await import('@tauri-apps/api/dialog');
-        const { writeTextFile } = await import('@tauri-apps/api/fs');
+        const { save } = await import('@tauri-apps/plugin-dialog');
+        const { writeTextFile } = await import('@tauri-apps/plugin-fs');
         const target = path && !saveAs ? path : await save({ filters: [{ name: 'Hailstorm project', extensions: ['hsp'] }] });
         if (target === null) return null;
         await writeTextFile(target, content);
