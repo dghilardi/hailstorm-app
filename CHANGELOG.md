@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Package a self-contained web frontend with local Monaco assets, source metadata and checksums, and attach it to desktop draft releases.
 - Support browser startup, project import/export, same-origin controller APIs and agent status with guarded simulation controls while retaining desktop configuration and file handling.
 
 ### Changed

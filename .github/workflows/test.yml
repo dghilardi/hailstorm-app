@@ -9,7 +9,35 @@ permissions:
   contents: read
 
 jobs:
+  test-web:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+    - name: Install frontend dependencies
+      run: yarn install --frozen-lockfile --non-interactive
+    - name: Test browser and desktop frontend behavior
+      run: yarn test --watchAll=false --runInBand
+      env:
+        CI: true
+    - name: Check TypeScript
+      run: yarn tsc --noEmit
+    - name: Package self-contained web frontend
+      run: yarn package:web
+      env:
+        CI: true
+    - uses: actions/upload-artifact@v4
+      with:
+        name: hailstorm-web
+        path: |
+          artifacts/hailstorm-web-*.tar.gz
+          artifacts/hailstorm-web-*.tar.gz.sha256
+        if-no-files-found: error
+
   test-tauri:
+    needs: test-web
     strategy:
       fail-fast: false
       matrix:

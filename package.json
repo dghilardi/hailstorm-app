@@ -32,8 +32,9 @@
     "zustand": "^4.0.0"
   },
   "scripts": {
-    "start": "cross-env BROWSER=none react-scripts start",
-    "build": "react-scripts build",
+    "start": "node scripts/prepare-assets.cjs && cross-env BROWSER=none react-scripts start",
+    "build": "node scripts/prepare-assets.cjs && react-scripts build",
+    "package:web": "node scripts/package-web.cjs",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "tauri": "tauri"
